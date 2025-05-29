@@ -1,0 +1,104 @@
+<mjml>
+  <mj-body background-color="#f8fafc">
+    <mj-section background-color="#ffffff" padding="40px 20px" border-radius="8px">
+      <mj-column vertical-align="middle" width="100%">
+        <mj-text
+          align="center"
+          padding="35px"
+          font-size="24px"
+          font-weight="600"
+          font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+          color="#1f2937"
+          line-height="1.25">
+          {{ project_name }} - Новый аккаунт
+        </mj-text>
+
+        <mj-text
+          align="center"
+          font-size="18px"
+          font-weight="500"
+          padding="0 25px 16px"
+          font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+          color="#374151"
+          line-height="1.5">
+          🎉 Добро пожаловать в ваш новый аккаунт!
+        </mj-text>
+
+        <mj-text
+          align="center"
+          font-size="16px"
+          padding="0 25px 24px"
+          font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+          color="#6b7280"
+          line-height="1.6">
+          Вот данные вашего аккаунта:
+        </mj-text>
+
+        <mj-text
+          align="center"
+          font-size="16px"
+          font-weight="500"
+          padding="8px 25px"
+          font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+          color="#374151"
+          line-height="1.5"
+          background-color="#f1f5f9">
+          👤 Имя пользователя: <span style="color: #059669; font-weight: 600;">{{ username }}</span>
+        </mj-text>
+
+        <mj-text
+          align="center"
+          font-size="16px"
+          font-weight="500"
+          padding="8px 25px 24px"
+          font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+          color="#374151"
+          line-height="1.5"
+          background-color="#f1f5f9">
+          🔑 Пароль: <span style="color: #dc2626; font-weight: 600; font-family: 'Courier New', monospace;">{{ password }}</span>
+        </mj-text>
+
+        <mj-text
+          align="center"
+          font-size="14px"
+          padding="0 25px 24px"
+          font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+          color="#f59e0b"
+          line-height="1.5">
+          ⚠️ Пожалуйста, измените пароль после первого входа в систему для обеспечения безопасности.
+        </mj-text>
+
+        <mj-button
+          align="center"
+          font-size="16px"
+          font-weight="600"
+          background-color="#059669"
+          border-radius="8px"
+          color="#ffffff"
+          href="{{ link }}"
+          padding="12px 32px"
+          font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+          text-decoration="none"
+          border="none">
+          🚀 Перейти в CodeIO
+        </mj-button>
+
+        <mj-divider
+          border-color="#e5e7eb"
+          border-width="1px"
+          padding="24px 0">
+        </mj-divider>
+
+        <mj-text
+          align="center"
+          font-size="12px"
+          padding="16px 25px 0"
+          font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+          color="#9ca3af"
+          line-height="1.4">
+          Храните ваши данные для входа в безопасности и не делитесь ими ни с кем.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>
