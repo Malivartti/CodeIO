@@ -5,6 +5,7 @@ from typing import Annotated, Any
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.attempt.accessor import AttemptAccessor
 from app.core.context import (
     is_in_explicit_transaction,
     reset_explicit_transaction,
@@ -13,6 +14,7 @@ from app.core.context import (
 from app.core.db import SessionDep
 from app.core.exceptions import InternalException
 from app.core.logger import create_log
+from app.task.accessor import TaskAccessor
 from app.user.accessor import UserAccessor
 
 log = create_log(__name__)
@@ -22,6 +24,8 @@ class Store:
     def __init__(self, session: AsyncSession):
         self.session = session
         self._user: UserAccessor | None = None
+        self._task: TaskAccessor | None = None
+        self._attempt: AttemptAccessor | None = None
 
     @asynccontextmanager
     async def transaction(self) -> AsyncGenerator["Store", Any]:
@@ -45,6 +49,18 @@ class Store:
         if self._user is None:
             self._user = UserAccessor(self.session)
         return self._user
+
+    @property
+    def task(self) -> TaskAccessor:
+        if self._task is None:
+            self._task = TaskAccessor(self.session)
+        return self._task
+
+    @property
+    def attempt(self) -> AttemptAccessor:
+        if self._attempt is None:
+            self._attempt = AttemptAccessor(self.session)
+        return self._attempt
 
 
 def get_store(session: SessionDep) -> Store:

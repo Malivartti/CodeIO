@@ -8,8 +8,9 @@ class Message(SQLModel):
     message: str
 
 
-class AccessToken(SQLModel):
+class TokenPair(SQLModel):
     access_token: str
+    refresh_token: str
     token_type: str = "bearer"
 
 

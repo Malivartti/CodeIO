@@ -4,50 +4,63 @@ from app.core.exceptions import NotFoundException
 
 
 class UserInactiveException(HTTPException):
-    def __init__(self) -> None:
-        super().__init__(status_code=403, detail="Учетная запись не активна")
+    default_status_code = 403
+    default_message = "Учетная запись не активна"
 
-
-class UserNotExistsException(HTTPException):
     def __init__(self) -> None:
         super().__init__(
-            status_code=404,
-            detail="Пользователь с таким email не существует",
+            status_code=self.default_status_code, detail=self.default_message
         )
 
 
 class UserAlreadyExistsException(HTTPException):
+    default_status_code = 409
+    default_message = "Пользователь с таким email уже существует"
+
     def __init__(self) -> None:
         super().__init__(
-            status_code=409,
-            detail="Пользователь с таким email уже существует",
+            status_code=self.default_status_code, detail=self.default_message
         )
 
 
 class UserSameEmailException(HTTPException):
+    default_status_code = 400
+    default_message = "Новый email не может совпадать с текущим"
+
     def __init__(self) -> None:
         super().__init__(
-            status_code=400, detail="Новый email не может совпадать с текущим"
+            status_code=self.default_status_code, detail=self.default_message
         )
 
 
 class UserEmailMismatchException(HTTPException):
+    default_status_code = 400
+    default_message = "Указанный email не совпадает с вашим"
+
     def __init__(self) -> None:
         super().__init__(
-            status_code=400,
-            detail="Указанный email не совпадает с вашим",
+            status_code=self.default_status_code,
+            detail=self.default_message,
         )
 
 
 class UserIncorrectPasswordException(HTTPException):
+    default_status_code = 400
+    default_message = "Неправильный пароль"
+
     def __init__(self) -> None:
-        super().__init__(status_code=400, detail="Неправильный пароль")
+        super().__init__(
+            status_code=self.default_status_code, detail=self.default_message
+        )
 
 
 class UserSamePasswordException(HTTPException):
+    default_status_code = 400
+    default_message = "Новый пароль не может совпадать с текущим"
+
     def __init__(self) -> None:
         super().__init__(
-            status_code=400, detail="Новый пароль не может совпадать с текущим"
+            status_code=self.default_status_code, detail=self.default_message
         )
 
 

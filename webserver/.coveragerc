@@ -1,0 +1,10 @@
+[run]
+omit =
+    app/alembic/*
+    app/tests/*
+    app/email-templates/*
+
+branch = True
+concurrency =
+    greenlet
+    thread

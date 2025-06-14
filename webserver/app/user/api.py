@@ -30,7 +30,6 @@ from .exceptions import (
 from .models import (
     UserCreate,
     UserPublic,
-    UserRegister,
     UsersPublic,
     UserUpdate,
     UserUpdateMe,
@@ -46,14 +45,14 @@ users_router = APIRouter(prefix="/users", tags=["users"])
 
 
 @me_router.get(
-    "/",
+    "",
     response_model=UserPublic,
 )
 async def get_me(current_user: CurrentUser) -> Any:
     return current_user
 
 
-@me_router.patch("/", response_model=UserPublic)
+@me_router.patch("", response_model=UserPublic)
 async def update_me(
     store: StoreDep, current_user: CurrentUser, user_in: UserUpdateMe
 ) -> Any:
@@ -143,13 +142,8 @@ async def update_me_email_confirm(
 # === ОПЕРАЦИИ С ПОЛЬЗОВАТЕЛЯМИ (тег "users") ===
 
 
-@users_router.post("/signup", response_model=UserPublic)
-async def signup(store: StoreDep, user_in: UserRegister) -> Any:
-    return await store.user.create_user(user_create=user_in)
-
-
 @users_router.get(
-    "/",
+    "",
     dependencies=[Depends(get_current_active_superuser)],
     response_model=UsersPublic,
 )
@@ -172,7 +166,7 @@ async def get_user(store: StoreDep, user_id: UUID) -> Any:
 
 
 @users_router.post(
-    "/",
+    "",
     dependencies=[Depends(get_current_active_superuser)],
     response_model=UserPublic,
 )

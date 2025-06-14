@@ -1,3 +1,5 @@
+import os
+import alembic_postgresql_enum
 import asyncio
 from logging.config import fileConfig
 
@@ -23,7 +25,8 @@ if config.config_file_name is not None:
 from app.core.config import settings
 from sqlmodel import SQLModel
 from app.user.models import *
-
+from app.task.models import *
+from app.attempt.models import *
 
 
 target_metadata = SQLModel.metadata
@@ -79,6 +82,11 @@ async def run_async_migrations() -> None:
         configuration,
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
+        connect_args={
+            "server_settings": {
+                "search_path": os.getenv("SCHEMA_NAME", "public")
+            }
+        },
     )
 
     async with connectable.connect() as connection:

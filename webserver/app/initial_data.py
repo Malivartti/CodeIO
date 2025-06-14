@@ -1,14 +1,14 @@
 import asyncio
 import logging
 
-from app.core.db import async_session_maker, init_db
+from app.core.db import init_db, sessionmaker
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
 async def init() -> None:
-    async with async_session_maker() as session:
+    async with sessionmaker() as session:
         await init_db(session)
 
 

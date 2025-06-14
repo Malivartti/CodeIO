@@ -34,6 +34,11 @@ class UserRegister(SQLModel):
     last_name: str | None = Field(max_length=255, default=None)
 
 
+class UserLogin(SQLModel):
+    email: EmailStr = Field(max_length=255)
+    password: str = Field(min_length=8, max_length=40)
+
+
 class UserUpdateMe(SQLModel):
     first_name: str | None = Field(max_length=255, default=None)
     last_name: str | None = Field(max_length=255, default=None)

@@ -1,10 +1,8 @@
-from datetime import timedelta
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 
-from app.core.config import settings
 from app.core.email_sender import (
     generate_reset_password_email,
     send_email,
@@ -12,36 +10,66 @@ from app.core.email_sender import (
 from app.core.security import (
     create_access_token,
     create_password_reset_token,
+    create_refresh_token,
     verify_password_reset_token,
+    verify_refresh_token,
 )
 from app.store import StoreDep
 from app.user.exceptions import (
     UserInactiveException,
-    UserNotExistsException,
 )
-from app.user.models import UserUpdate
+from app.user.models import UserLogin, UserRegister, UserUpdate
 
-from .exceptions import InvalidTokenException
-from .models import AccessToken, Message, NewPassword
+from .exceptions import InvalidTokenException, UserNotExistsException
+from .models import Message, NewPassword, Token, TokenPair
 
 router = APIRouter(tags=["auth"])
 
 
-@router.post("/login/access-token")
+@router.post("/login/access-token", response_model=TokenPair)
 async def login_access_token(
     store: StoreDep, form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
-) -> AccessToken:
-    """OAuth2 compatible token login, get an access token for future requests"""
+) -> TokenPair:
     user = await store.user.authenticate(
         email=form_data.username, password=form_data.password
     )
-    access_token_expires = timedelta(
-        minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
+    return TokenPair(
+        access_token=create_access_token(str(user.id)),
+        refresh_token=create_refresh_token(str(user.id)),
     )
-    return AccessToken(
-        access_token=create_access_token(
-            user.id, expires_delta=access_token_expires
-        )
+
+
+@router.post("/login/refresh-token", response_model=TokenPair)
+async def refresh_access_token(body: Token) -> TokenPair:
+    user_id = verify_refresh_token(token=body.token)
+    if not user_id:
+        raise InvalidTokenException
+
+    return TokenPair(
+        access_token=create_access_token(user_id),
+        refresh_token=create_refresh_token(user_id),
+    )
+
+
+@router.post("/signup", response_model=TokenPair)
+async def signup(store: StoreDep, user_in: UserRegister) -> Any:
+    user = await store.user.create_user(user_create=user_in)
+
+    return TokenPair(
+        access_token=create_access_token(str(user.id)),
+        refresh_token=create_refresh_token(str(user.id)),
+    )
+
+
+@router.post("/login", response_model=TokenPair)
+async def login(store: StoreDep, user_in: UserLogin) -> Any:
+    user = await store.user.authenticate(
+        email=user_in.email, password=user_in.password
+    )
+
+    return TokenPair(
+        access_token=create_access_token(str(user.id)),
+        refresh_token=create_refresh_token(str(user.id)),
     )
 
 
@@ -65,7 +93,7 @@ async def recover_password(email: str, store: StoreDep) -> Message:
     )
 
 
-@router.post("/reset-password/")
+@router.post("/reset-password")
 async def reset_password(store: StoreDep, body: NewPassword) -> Message:
     email = verify_password_reset_token(token=body.token)
     if not email:

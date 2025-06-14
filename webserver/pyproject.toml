@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "alembic>=1.16.1",
+    "alembic-postgresql-enum>=1.7.0",
     "asyncpg>=0.30.0",
     "bcrypt>=4.3.0",
     "emails>=0.6",
@@ -18,15 +19,25 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "coverage>=7.8.2",
     "mypy>=1.15.0",
-    "pytest>=8.3.5",
     "ruff>=0.11.11",
+    "pytest>=8.3.5",
+    "pytest-asyncio>=0.24.0",
+    "pytest-xdist>=3.6.0",
+    "httpx>=0.28.1",
+    "coverage>=7.8.2",
+    "pytest-cov>=6.0.0",
 ]
 
 [tool.mypy]
 strict = true
 exclude = ["venv", ".venv", "alembic"]
+
+[tool.mypy.overrides]
+module = "app.tests.*"
+allow_untyped_defs = true
+disable_error_code = ["no-untyped-def"]
+
 
 [tool.pyright]
 reportUnknownVariableType = "none"
@@ -50,7 +61,6 @@ exclude = [
     "requirements",
     ".git",
 ]
-ignore = ["N818"]
 
 
 [tool.ruff.format]
@@ -67,6 +77,7 @@ skip-magic-trailing-comma = false
 line-ending = "auto"
 
 [tool.ruff.lint]
+ignore = ["N818"]
 # Список кодов или префиксов правил, которые следует считать исправляемыми. (https://docs.astral.sh/ruff/settings/#fixable)
 # По умолчанию все правила считаются исправляемыми.
 fixable = ["I", "RUF022", "RUF023"]
@@ -105,9 +116,8 @@ extend-select = [
     "RUF",      # https://docs.astral.sh/ruff/rules/#ruff-specific-rules-ruf
     "SIM",      # https://docs.astral.sh/ruff/rules/#flake8-simplify-sim
     "T20",      # https://docs.astral.sh/ruff/rules/#flake8-print-t20
-    "TRIO",     # https://docs.astral.sh/ruff/rules/#flake8-trio-trio
     "TRY300",   # https://docs.astral.sh/ruff/rules/try-consider-else
-    "TRY302",   # https://docs.astral.sh/ruff/rules/useless-try-except
+    "TRY203",   # https://docs.astral.sh/ruff/rules/useless-try-except
     "TRY401",   # https://docs.astral.sh/ruff/rules/verbose-log-message
     "UP",       # https://docs.astral.sh/ruff/rules/#pyupgrade-up
     "YTT",      # https://docs.astral.sh/ruff/rules/#flake8-2020-ytt
@@ -131,10 +141,6 @@ extend-ignore = [
     "PLR0913",  # https://docs.astral.sh/ruff/rules/too-many-arguments – может оказаться слишком жестко для ребят
     "PLR1714",  # https://docs.astral.sh/ruff/rules/repeated-equality-comparison – бывают неадекватные срабатывания
     "PERF203",  # https://docs.astral.sh/ruff/rules/try-except-in-loop – я бы включил, но сами таким грешим, не думаю, что крит
-
-    # нигде не придерживались такого подхода
-    "PT004",    # https://docs.astral.sh/ruff/rules/pytest-missing-fixture-name-underscore
-    "PT005",    # https://docs.astral.sh/ruff/rules/pytest-incorrect-fixture-name-underscore
 
     "PT007",    # https://docs.astral.sh/ruff/rules/pytest-parametrize-values-wrong-type – не считаю критичным
 

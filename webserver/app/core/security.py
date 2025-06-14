@@ -9,13 +9,7 @@ from .config import settings
 
 ALGORITHM = "HS256"
 
-TokenType = Literal["password_reset", "email_change"]
-
-
-def create_access_token(subject: str | Any, expires_delta: timedelta) -> str:
-    expire = datetime.now(timezone.utc) + expires_delta  # noqa: UP017
-    to_encode: dict[str, datetime | str] = {"exp": expire, "sub": str(subject)}
-    return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
+TokenType = Literal["access", "refresh", "password_reset", "email_change"]
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -31,14 +25,12 @@ def get_password_hash(password: str) -> str:
 
 
 def create_token(
-    email: str,
+    *,
+    sub: str,
     token_type: TokenType,
-    expires_hours: int | None = None,
+    expires_hours: int,
     extra_data: dict[str, Any] | None = None,
 ) -> str:
-    if expires_hours is None:
-        expires_hours = settings.EMAIL_RESET_TOKEN_EXPIRE_HOURS
-
     delta = timedelta(hours=expires_hours)
     now = datetime.now(timezone.utc)  # noqa: UP017
     expires = now + delta
@@ -47,7 +39,7 @@ def create_token(
     payload = {
         "exp": exp,
         "nbf": now,
-        "sub": email,
+        "sub": sub,
         "type": token_type,
     }
 
@@ -71,8 +63,33 @@ def verify_token(token: str, expected_type: TokenType) -> dict[str, Any] | None:
         return None
 
 
+def create_access_token(user_id: str) -> str:
+    return create_token(
+        sub=user_id,
+        token_type="access",
+        expires_hours=settings.ACCESS_TOKEN_EXPIRE_HOURS,
+    )
+
+
+def create_refresh_token(user_id: str) -> str:
+    return create_token(
+        sub=user_id,
+        token_type="access",
+        expires_hours=settings.REFRESH_TOKEN_EXPIRE_HOURS,
+    )
+
+
+def verify_refresh_token(token: str) -> str | None:
+    token_data = verify_token(token, "refresh")
+    return str(token_data["sub"]) if token_data else None
+
+
 def create_password_reset_token(email: str) -> str:
-    return create_token(email, "password_reset")
+    return create_token(
+        sub=email,
+        token_type="password_reset",
+        expires_hours=settings.EMAIL_RESET_TOKEN_EXPIRE_HOURS,
+    )
 
 
 def verify_password_reset_token(token: str) -> str | None:
@@ -82,7 +99,10 @@ def verify_password_reset_token(token: str) -> str | None:
 
 def create_email_change_token(email: str, new_email: str) -> str:
     return create_token(
-        email, "email_change", extra_data={"new_email": new_email}
+        sub=email,
+        token_type="email_change",
+        expires_hours=settings.EMAIL_RESET_TOKEN_EXPIRE_HOURS,
+        extra_data={"new_email": new_email},
     )
 
 

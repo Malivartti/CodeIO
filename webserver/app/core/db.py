@@ -16,15 +16,15 @@ from .security import get_password_hash
 
 engine = create_async_engine(str(settings.SQLALCHEMY_DATABASE_URI))
 
-async_session_maker = async_sessionmaker(bind=engine, expire_on_commit=False)
+sessionmaker = async_sessionmaker(bind=engine, expire_on_commit=False)
 
 
-async def get_db() -> AsyncGenerator[AsyncSession, None]:
-    async with async_session_maker() as session:
+async def get_session() -> AsyncGenerator[AsyncSession, None]:
+    async with sessionmaker() as session:
         yield session
 
 
-SessionDep = Annotated[AsyncSession, Depends(get_db)]
+SessionDep = Annotated[AsyncSession, Depends(get_session)]
 
 
 async def init_db(session: AsyncSession) -> None:
