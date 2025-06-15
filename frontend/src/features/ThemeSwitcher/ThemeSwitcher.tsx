@@ -6,7 +6,7 @@ import LightThemeIcon from '@shared/assets/icons/LightTheme.svg';
 import SystemThemeIcon from '@shared/assets/icons/SystemTheme.svg';
 import TickIcon from '@shared/assets/icons/Tick.svg';
 import { default as cn } from 'classnames';
-import { FC, useLayoutEffect, useRef, useState } from 'react';
+import { FC, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 interface Props {
   className?: string;
@@ -33,8 +33,25 @@ const themes = [
 const ThemeSwitcher: FC<Props> = ({ className }) => {
   const { theme, setTheme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
+  const switcherRef = useRef<HTMLDivElement>(null);
   const btnRef = useRef<HTMLButtonElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (switcherRef.current && !switcherRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
 
   useLayoutEffect(() => {
     if (isOpen && btnRef.current && dropdownRef.current) {
@@ -50,20 +67,17 @@ const ThemeSwitcher: FC<Props> = ({ className }) => {
   };
 
   return (
-    <div className={cn('relative inline-block', className)}>
+    <div className={cn('relative', className)} ref={switcherRef}>
       <button
-        ref={btnRef}
         type="button"
         onClick={() => setIsOpen((v) => !v)}
         className={cn(
-          'flex items-center gap-2 px-3 py-2 rounded-lg border border-border-primary bg-bg-secondary min-w-[120px] hover:bg-hover transition-colors shadow-sm',
-          'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary'
+          'flex items-center space-x-2 hover:bg-state-hover rounded-md px-3 py-2 transition-colors'
         )}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
       >
         {currentTheme.icon}
-        <span className="text-text-primary">{currentTheme.label}</span>
         <DownArrowIcon
           className={cn(
             'ml-auto h-4 w-4 text-text-secondary transition-transform duration-200',
@@ -77,9 +91,7 @@ const ThemeSwitcher: FC<Props> = ({ className }) => {
       {isOpen && (
         <div
           ref={dropdownRef}
-          className={cn(
-            'absolute left-0 mt-2 bg-bg-primary border border-border-primary rounded-lg shadow-lg z-50 overflow-hidden w-max min-w-[120px]'
-          )}
+          className='absolute left-0 mt-2 bg-bg-primary border border-border-primary rounded-lg shadow-lg z-50 overflow-hidden w-max min-w-[120px]'
         >
           {themes.map((option) => (
             <button

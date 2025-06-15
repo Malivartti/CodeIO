@@ -1,14 +1,17 @@
 import './styles/index.scss';
 
-import ThemeSwitcher from '@features/ThemeSwitcher';
+import AppRouter from '@app/providers/AppRouter';
+import ErrorBoundary from '@app/providers/ErrorBoundary';
 
 import ThemeProvider from './providers/ThemeProvider';
 
 const App = () => {
   return (
-    <ThemeProvider>
-      <ThemeSwitcher />
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <AppRouter />
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 };
 

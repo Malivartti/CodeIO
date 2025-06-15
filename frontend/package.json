@@ -2,7 +2,7 @@
   "name": "codeio",
   "packageManager": "yarn@4.9.2",
   "scripts": {
-    "dev": "webpack serve --mode development",
+    "dev": "webpack serve --mode development --port 5173",
     "build": "webpack --mode production",
     "build:dev": "webpack --mode development",
     "lint": "eslint '**/*.{ts,tsx}'",
