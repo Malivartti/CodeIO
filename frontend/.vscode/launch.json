@@ -1,0 +1,28 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Yarn Dev Server",
+      "runtimeExecutable": "yarn",
+      "runtimeArgs": ["dev"],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "chrome",
+      "request": "launch",
+      "name": "Frontend Debug (Chrome)",
+      "url": "http://localhost:3000",
+      "webRoot": "${workspaceFolder}",
+      "sourceMaps": true,
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Dev Server + Debug",
+      "configurations": ["Yarn Dev Server", "Frontend Debug (Chrome)"],
+      "stopAll": true
+    }
+  ]
+}

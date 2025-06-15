@@ -1,0 +1,10 @@
+@use "tailwindcss";
+@use './theme/light';
+@use './theme/dark';
+
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+
+body {
+  background-color: var(--color-bg-primary);
+}
