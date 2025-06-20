@@ -3,6 +3,7 @@ import { authStore } from '@features/auth';
 import AlertIcon from '@shared/assets/icons/Alert.svg';
 import CrossIcon from '@shared/assets/icons/Cross.svg';
 import { NavigationHelpers } from '@shared/lib/routes';
+import { AppRoutes } from '@shared/types/routes';
 import { default as cn } from 'classnames';
 import { observer } from 'mobx-react-lite';
 import { FC, FormEvent, useState } from 'react';
@@ -21,7 +22,7 @@ const LoginPage: FC = observer(() => {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    const success = await authStore.login({ email, password });
+    const success = await authStore.login({ email: email.toLocaleLowerCase(), password });
     if (success) {
       const isSuperuser = userStore.isSuperuser;
       const redirectUrl = location.state?.from?.pathname || NavigationHelpers.getDefaultRouteForUser(true, isSuperuser);
@@ -30,10 +31,10 @@ const LoginPage: FC = observer(() => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-bg-secondary">
-      <div className="max-w-md w-full space-y-8">
+    <div className="min-h-screen flex items-center justify-center bg-canvas">
+      <div className="max-w-md w-full space-y-8 p-6 bg-surface rounded-lg shadow-lg border border-surface">
         <div>
-          <h2 className="text-center text-3xl font-extrabold text-text-primary">
+          <h2 className="text-center text-3xl font-extrabold text-strong">
             Вход в систему
           </h2>
         </div>
@@ -52,9 +53,9 @@ const LoginPage: FC = observer(() => {
               <div className="ml-auto pl-3 flex items-center">
                 <button
                   onClick={() => setShowMessage(false)}
-                  className="text-warning hover:text-warning-hover"
+                  className="text-warning hover:text-warning/80 transition-colors"
                 >
-                  <CrossIcon className='' width={30} height={30}/>
+                  <CrossIcon className="" width={30} height={30}/>
                 </button>
               </div>
             </div>
@@ -76,10 +77,10 @@ const LoginPage: FC = observer(() => {
               type="email"
               required
               className={cn(
-                'relative block w-full px-3 py-2 border rounded-md placeholder-text-tertiary text-text-primary bg-bg-primary focus:outline-none focus:ring-2 focus:ring-focus focus:border-transparent transition-colors',
+                'relative block w-full px-3 py-2 border rounded-md placeholder-subtle text-strong bg-canvas focus:outline-none focus:ring-2 focus:ring-surface-accent focus:border-transparent transition-colors',
                 authStore.hasFieldError('email')
                   ? 'border-error'
-                  : 'border-border-primary hover:border-border-accent'
+                  : 'border-surface'
               )}
               placeholder="Email"
               value={email}
@@ -98,10 +99,10 @@ const LoginPage: FC = observer(() => {
               type="password"
               required
               className={cn(
-                'relative block w-full px-3 py-2 border rounded-md placeholder-text-tertiary text-text-primary bg-bg-primary focus:outline-none focus:ring-2 focus:ring-focus focus:border-transparent transition-colors',
+                'relative block w-full px-3 py-2 border rounded-md placeholder-subtle text-strong bg-canvas focus:outline-none focus:ring-2 focus:ring-surface-accent focus:border-transparent transition-colors',
                 authStore.hasFieldError('password')
                   ? 'border-error'
-                  : 'border-border-primary hover:border-border-accent'
+                  : 'border-surface'
               )}
               placeholder="Пароль"
               value={password}
@@ -116,15 +117,22 @@ const LoginPage: FC = observer(() => {
             <button
               type="submit"
               disabled={authStore.isLoading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-text-inverse bg-primary hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-focus disabled:bg-state-disabled disabled:cursor-not-allowed transition-colors"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-inverse bg-brand hover:bg-brand-hover active:bg-brand-active focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-bg-brand-active disabled:bg-disabled disabled:cursor-not-allowed transition-colors"
             >
               {authStore.isLoading ? 'Загрузка...' : 'Войти'}
             </button>
           </div>
 
           <div className="text-center">
-            <Link to="/register" className="font-medium text-primary hover:text-primary-hover transition-colors">
+            <Link to={AppRoutes.REGISTER} className="font-medium text-brand hover:text-brand-hover transition-colors">
               Нет аккаунта? Зарегистрироваться
+            </Link>
+          </div>
+          <div className="text-center">
+            <Link
+              to={AppRoutes.FORGOT_PASSWORD}
+              className="font-medium text-brand hover:text-brand-hover transition-colors">
+              Забыли пароль?
             </Link>
           </div>
         </form>

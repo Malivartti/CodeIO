@@ -63,10 +63,10 @@ class ErrorBoundary extends Component<Props, State> {
         >
           {isDevelopment && this.state.error && (
             <details className="w-full mt-4">
-              <summary className="cursor-pointer text-text-secondary text-sm mb-2">
+              <summary className="cursor-pointer text-secondary text-sm mb-2">
                 Техническая информация (только в режиме разработки)
               </summary>
-              <div className="bg-bg-tertiary rounded p-3 text-xs font-mono text-text-secondary max-h-32 overflow-auto">
+              <div className="bg-tertiary rounded p-3 text-xs font-mono text-secondary max-h-32 overflow-auto">
                 <div className="mb-2">
                   <strong>Ошибка:</strong> {this.state.error.toString()}
                 </div>

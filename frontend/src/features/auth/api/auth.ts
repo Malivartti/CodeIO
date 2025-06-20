@@ -1,5 +1,6 @@
 import { authApiClient } from '@shared/api/client';
-import { FastAPIError,Token, TokenPair, UserLogin, UserRegister } from '@shared/types/auth';
+import { FastAPIError, ResetPasswordRequest, TokenPair, UserLogin, UserRegister } from '@shared/types/auth';
+import { Message, Token } from '@shared/types/common';
 import { AxiosError } from 'axios';
 
 
@@ -62,5 +63,15 @@ export const authAPI = {
     } catch (error) {
       return handleApiError(error as AxiosError<FastAPIError>);
     }
+  },
+
+  async requestPasswordReset(email: string): Promise<Message> {
+    const response = await authApiClient.post<Message>(`/password-recovery/${encodeURIComponent(email)}`);
+    return response.data;
+  },
+
+  async resetPassword(data: ResetPasswordRequest): Promise<Message> {
+    const response = await authApiClient.post<Message>('/reset-password', data);
+    return response.data;
   },
 };

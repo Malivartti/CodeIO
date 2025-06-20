@@ -1,1 +1,1 @@
-export { default } from './TasksPage.lazy';
+export { default } from './ui/TasksPage.lazy';

@@ -35,7 +35,6 @@ export const setupInterceptors = (apiInstance: AxiosInstance, authApiInstance: A
     }
   );
 
-  // Response interceptor
   apiInstance.interceptors.response.use(
     (response: AxiosResponse) => response,
     async (error: AxiosError) => {

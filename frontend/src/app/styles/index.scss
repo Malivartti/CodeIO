@@ -1,10 +1,19 @@
 @use "tailwindcss";
 @use './theme/light';
 @use './theme/dark';
+@use './prose';
+@plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
 
-body {
-  background-color: var(--color-bg-primary);
+
+html {
+  background-color: var(--background-color-canvas);
 }

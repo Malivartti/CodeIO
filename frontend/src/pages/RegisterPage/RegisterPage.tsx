@@ -1,37 +1,95 @@
 import { userStore } from '@entities/user';
-import { authStore } from '@features/auth/model/store';
+import { authStore } from '@features/auth';
 import { NavigationHelpers } from '@shared/lib/routes';
 import { default as cn } from 'classnames';
 import { observer } from 'mobx-react-lite';
 import { FC, FormEvent, useState } from 'react';
-import { Link,useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const RegisterPage: FC = observer(() => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [localErrors, setLocalErrors] = useState<Record<string, string>>({});
   const navigate = useNavigate();
+
+  const validatePasswords = (): boolean => {
+    const errors: Record<string, string> = {};
+
+    if (password.length < 8) {
+      errors.password = 'Пароль должен содержать минимум 8 символов';
+    }
+
+    if (password !== confirmPassword) {
+      errors.confirmPassword = 'Пароли не совпадают';
+    }
+
+    setLocalErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handlePasswordChange = (value: string) => {
+    setPassword(value);
+    if (localErrors.password || localErrors.confirmPassword) {
+      setLocalErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors.password;
+        if (confirmPassword && value === confirmPassword) {
+          delete newErrors.confirmPassword;
+        }
+        return newErrors;
+      });
+    }
+  };
+
+  const handleConfirmPasswordChange = (value: string) => {
+    setConfirmPassword(value);
+    if (localErrors.confirmPassword) {
+      setLocalErrors(prev => {
+        const newErrors = { ...prev };
+        if (password === value) {
+          delete newErrors.confirmPassword;
+        }
+        return newErrors;
+      });
+    }
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+
+    if (!validatePasswords()) {
+      return;
+    }
+
     const success = await authStore.register({
-      email,
+      email: email.toLowerCase(),
       password,
       first_name: firstName,
       last_name: lastName || undefined,
     });
+
     if (success) {
       const isSuperuser = userStore.isSuperuser;
       navigate(NavigationHelpers.getDefaultRouteForUser(true, isSuperuser));
     }
   };
 
+  const getFieldError = (field: string): string | undefined => {
+    return localErrors[field] || authStore.getFieldError(field);
+  };
+
+  const hasFieldError = (field: string): boolean => {
+    return Boolean(localErrors[field] || authStore.hasFieldError(field));
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-bg-secondary">
-      <div className="max-w-md w-full space-y-8">
+    <div className="min-h-screen flex items-center justify-center bg-canvas">
+      <div className="max-w-md w-full space-y-8 p-6 bg-surface rounded-lg shadow-lg border border-surface">
         <div>
-          <h2 className="text-center text-3xl font-extrabold text-text-primary">
+          <h2 className="text-center text-3xl font-extrabold text-strong">
             Регистрация
           </h2>
         </div>
@@ -48,17 +106,17 @@ const RegisterPage: FC = observer(() => {
                 type="email"
                 required
                 className={cn(
-                  'relative block w-full px-3 py-2 border rounded-md placeholder-text-tertiary text-text-primary bg-bg-primary focus:outline-none focus:ring-2 focus:ring-focus focus:border-transparent transition-colors',
-                  authStore.hasFieldError('email')
+                  'relative block w-full px-3 py-2 border rounded-md placeholder-subtle text-strong bg-canvas focus:outline-none focus:ring-2 focus:ring-surface-accent focus:border-transparent transition-colors',
+                  hasFieldError('email')
                     ? 'border-error'
-                    : 'border-border-primary hover:border-border-accent'
+                    : 'border-surface'
                 )}
                 placeholder="Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
-              {authStore.hasFieldError('email') && (
-                <p className="mt-2 text-sm text-error">{authStore.getFieldError('email')}</p>
+              {hasFieldError('email') && (
+                <p className="mt-2 text-sm text-error">{getFieldError('email')}</p>
               )}
             </div>
 
@@ -67,17 +125,36 @@ const RegisterPage: FC = observer(() => {
                 type="password"
                 required
                 className={cn(
-                  'relative block w-full px-3 py-2 border rounded-md placeholder-text-tertiary text-text-primary bg-bg-primary focus:outline-none focus:ring-2 focus:ring-focus focus:border-transparent transition-colors',
-                  authStore.hasFieldError('password')
+                  'relative block w-full px-3 py-2 border rounded-md placeholder-subtle text-strong bg-canvas focus:outline-none focus:ring-2 focus:ring-surface-accent focus:border-transparent transition-colors',
+                  hasFieldError('password')
                     ? 'border-error'
-                    : 'border-border-primary hover:border-border-accent'
+                    : 'border-surface'
                 )}
                 placeholder="Пароль (минимум 8 символов)"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => handlePasswordChange(e.target.value)}
               />
-              {authStore.hasFieldError('password') && (
-                <p className="mt-2 text-sm text-error">{authStore.getFieldError('password')}</p>
+              {hasFieldError('password') && (
+                <p className="mt-2 text-sm text-error">{getFieldError('password')}</p>
+              )}
+            </div>
+
+            <div>
+              <input
+                type="password"
+                required
+                className={cn(
+                  'relative block w-full px-3 py-2 border rounded-md placeholder-subtle text-strong bg-canvas focus:outline-none focus:ring-2 focus:ring-surface-accent focus:border-transparent transition-colors',
+                  hasFieldError('confirmPassword')
+                    ? 'border-error'
+                    : 'border-surface'
+                )}
+                placeholder="Подтвердите пароль"
+                value={confirmPassword}
+                onChange={(e) => handleConfirmPasswordChange(e.target.value)}
+              />
+              {hasFieldError('confirmPassword') && (
+                <p className="mt-2 text-sm text-error">{getFieldError('confirmPassword')}</p>
               )}
             </div>
 
@@ -86,17 +163,17 @@ const RegisterPage: FC = observer(() => {
                 type="text"
                 required
                 className={cn(
-                  'relative block w-full px-3 py-2 border rounded-md placeholder-text-tertiary text-text-primary bg-bg-primary focus:outline-none focus:ring-2 focus:ring-focus focus:border-transparent transition-colors',
-                  authStore.hasFieldError('first_name')
+                  'relative block w-full px-3 py-2 border rounded-md placeholder-subtle text-strong bg-canvas focus:outline-none focus:ring-2 focus:ring-surface-accent focus:border-transparent transition-colors',
+                  hasFieldError('first_name')
                     ? 'border-error'
-                    : 'border-border-primary hover:border-border-accent'
+                    : 'border-surface'
                 )}
                 placeholder="Имя"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
               />
-              {authStore.hasFieldError('first_name') && (
-                <p className="mt-2 text-sm text-error">{authStore.getFieldError('first_name')}</p>
+              {hasFieldError('first_name') && (
+                <p className="mt-2 text-sm text-error">{getFieldError('first_name')}</p>
               )}
             </div>
 
@@ -104,33 +181,61 @@ const RegisterPage: FC = observer(() => {
               <input
                 type="text"
                 className={cn(
-                  'relative block w-full px-3 py-2 border rounded-md placeholder-text-tertiary text-text-primary bg-bg-primary focus:outline-none focus:ring-2 focus:ring-focus focus:border-transparent transition-colors',
-                  authStore.hasFieldError('last_name')
+                  'relative block w-full px-3 py-2 border rounded-md placeholder-subtle text-strong bg-canvas focus:outline-none focus:ring-2 focus:ring-surface-accent focus:border-transparent transition-colors',
+                  hasFieldError('last_name')
                     ? 'border-error'
-                    : 'border-border-primary hover:border-border-accent'
+                    : 'border-surface'
                 )}
                 placeholder="Фамилия (необязательно)"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
               />
-              {authStore.hasFieldError('last_name') && (
-                <p className="mt-2 text-sm text-error">{authStore.getFieldError('last_name')}</p>
+              {hasFieldError('last_name') && (
+                <p className="mt-2 text-sm text-error">{getFieldError('last_name')}</p>
               )}
             </div>
+          </div>
+
+          <div className="bg-canvas border border-surface rounded-lg p-3">
+            <p className="text-sm text-medium mb-2">
+              <strong>Требования к паролю:</strong>
+            </p>
+            <ul className="text-xs text-subtle space-y-1">
+              <li className={cn(
+                'flex items-center gap-2',
+                password.length >= 8 ? 'text-success' : 'text-subtle'
+              )}>
+                <span className={cn(
+                  'w-2 h-2 rounded-full',
+                  password.length >= 8 ? 'bg-success' : 'bg-subtle'
+                )} />
+                Минимум 8 символов
+              </li>
+              <li className={cn(
+                'flex items-center gap-2',
+                password && confirmPassword && password === confirmPassword ? 'text-success' : 'text-subtle'
+              )}>
+                <span className={cn(
+                  'w-2 h-2 rounded-full',
+                  password && confirmPassword && password === confirmPassword ? 'bg-success' : 'bg-subtle'
+                )} />
+                Пароли совпадают
+              </li>
+            </ul>
           </div>
 
           <div>
             <button
               type="submit"
               disabled={authStore.isLoading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-text-inverse bg-primary hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-focus disabled:bg-state-disabled disabled:cursor-not-allowed transition-colors"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-inverse bg-brand hover:bg-brand-hover active:bg-brand-active focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:bg-disabled disabled:cursor-not-allowed transition-colors"
             >
               {authStore.isLoading ? 'Загрузка...' : 'Зарегистрироваться'}
             </button>
           </div>
 
           <div className="text-center">
-            <Link to="/login" className="font-medium text-primary hover:text-primary-hover transition-colors">
+            <Link to="/login" className="font-medium text-brand hover:text-brand-hover transition-colors">
               Уже есть аккаунт? Войти
             </Link>
           </div>

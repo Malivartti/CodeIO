@@ -20,14 +20,15 @@ export interface UserRegister {
   last_name?: string;
 }
 
+export interface UserUpdateMe {
+  first_name?: string;
+  last_name?: string;
+}
+
 export interface TokenPair {
   access_token: string;
   refresh_token: string;
   token_type: string;
-}
-
-export interface Token {
-  token: string;
 }
 
 export interface ValidationError {
@@ -38,4 +39,23 @@ export interface ValidationError {
 
 export interface FastAPIError {
   detail: string | ValidationError[];
+}
+
+export interface UserUpdateMeEmail {
+  new_email: string;
+}
+
+
+export interface UserUpdateMePassword {
+  current_password: string;
+  new_password: string;
+}
+
+export interface PasswordRecoveryRequest {
+  email: string;
+}
+
+export interface ResetPasswordRequest {
+  token: string;
+  new_password: string;
 }

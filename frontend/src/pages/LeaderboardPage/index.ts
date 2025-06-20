@@ -1,1 +1,1 @@
-export { default } from './LeaderboardPage.lazy';
+export { default } from './ui/LeaderboardPage.lazy';

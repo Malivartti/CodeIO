@@ -66,6 +66,7 @@ export default [
       '@stylistic/semi': 'error',
       '@stylistic/indent': ['error', 2],
       '@stylistic/quotes': ['error', 'single'],
+      '@stylistic/jsx-quotes': ['error', 'prefer-double'],
       '@stylistic/no-multi-spaces': 'error',
       '@stylistic/arrow-spacing': 'error',
       '@stylistic/comma-dangle': [

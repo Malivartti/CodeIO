@@ -20,7 +20,8 @@
           "screen",
           "custom-variant",
           "theme",
-          "variant"
+          "variant",
+          "plugin"
         ]
       }
     ],

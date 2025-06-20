@@ -1,0 +1,24 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: codeio_rabbitmq
+    ports:
+      - "5672:5672"    # Порт для подключения приложений
+      - "15672:15672"  # Порт для веб-интерфейса управления
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    env_file:
+      - .env
+
+volumes:
+  rabbitmq_data:
