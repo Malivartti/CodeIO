@@ -1,13 +1,26 @@
-# docker-compose.yml
-version: '3.8'
-
 services:
+  postgres:
+    image: postgres:17
+    container_name: codeio_postgres
+    restart: always
+    ports:
+      - 1235:5432
+    env_file:
+      - .env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
   rabbitmq:
     image: rabbitmq:3-management
     container_name: codeio_rabbitmq
     ports:
-      - "5672:5672"    # Порт для подключения приложений
-      - "15672:15672"  # Порт для веб-интерфейса управления
+      - "5672:5672"
+      - "15672:15672"
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     restart: unless-stopped
@@ -20,5 +33,48 @@ services:
     env_file:
       - .env
 
+  code_executor:
+    build:
+      context: ./code_executor
+    image: codeio_code_executor
+    container_name: codeio_code_executor
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  webserver:
+    build:
+      context: ./webserver
+    image: codeio_webserver
+    container_name: codeio_webserver
+    ports:
+      - "8000:8000"
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+    image: codeio_frontend
+    container_name: codeio_frontend
+    ports:
+      - "80:80"
+    environment:
+      - NODE_ENV=production
+      - REACT_APP_API_URL=http://localhost:8000
+    restart: always
+    depends_on:
+      - webserver
+
 volumes:
+  postgres_data:
   rabbitmq_data:

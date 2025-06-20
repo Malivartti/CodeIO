@@ -1,0 +1,110 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: codeio_postgres
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - default
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: codeio_rabbitmq
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    env_file:
+      - .env
+    networks:
+      - default
+
+  code_executor:
+    build:
+      context: ./code_executor
+    image: codeio_code_executor
+    container_name: codeio_code_executor
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - default
+
+  webserver:
+    build:
+      context: ./webserver
+    image: codeio_webserver
+    container_name: codeio_webserver
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik-public
+      - traefik.http.routers.codeio-backend.rule=Host(`api.${DOMAIN}`)
+      - traefik.http.routers.codeio-backend.entrypoints=https
+      - traefik.http.routers.codeio-backend.tls=true
+      - traefik.http.routers.codeio-backend.tls.certresolver=le
+      - traefik.http.services.codeio-backend.loadbalancer.server.port=8000
+      - traefik.http.routers.codeio-backend-http.rule=Host(`api.${DOMAIN}`)
+      - traefik.http.routers.codeio-backend-http.entrypoints=http
+      - traefik.http.routers.codeio-backend-http.middlewares=https-redirect
+    networks:
+      - traefik-public
+      - default
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        - REACT_APP_API_URL=https://api.${DOMAIN}/api/v1
+    image: codeio_frontend
+    container_name: codeio_frontend
+    restart: always
+    environment:
+      - NODE_ENV=production
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik-public
+      - traefik.http.routers.codeio-frontend.rule=Host(`codeio.${DOMAIN}`)
+      - traefik.http.routers.codeio-frontend.entrypoints=https
+      - traefik.http.routers.codeio-frontend.tls=true
+      - traefik.http.routers.codeio-frontend.tls.certresolver=le
+      - traefik.http.services.codeio-frontend.loadbalancer.server.port=80
+      - traefik.http.routers.codeio-frontend-http.rule=Host(`codeio.${DOMAIN}`)
+      - traefik.http.routers.codeio-frontend-http.entrypoints=http
+      - traefik.http.routers.codeio-frontend-http.middlewares=https-redirect
+    networks:
+      - traefik-public
+      - default
+    depends_on:
+      - webserver
+
+volumes:
+  postgres_data:
+  rabbitmq_data:
+
+networks:
+  traefik-public:
+    external: true

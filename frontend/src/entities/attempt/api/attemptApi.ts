@@ -1,5 +1,5 @@
 import { apiClient } from '@shared/api/client';
-import { Attempt, AttemptCreate, AttemptPublic,AttemptsResponse } from '@shared/types/attempt';
+import { Attempt, AttemptCreate, AttemptPublic,AttemptsResponse, AttemptStatus } from '@shared/types/attempt';
 
 export const attemptAPI = {
   async createAttempt(attemptData: AttemptCreate): Promise<{ id: number; status: string }> {
@@ -35,7 +35,7 @@ export const attemptAPI = {
     signal?: AbortSignal
   ): Promise<{
       id: number;
-      status: string;
+      status: AttemptStatus;
       time_used_ms?: number;
       memory_used_bytes?: number;
       error_traceback?: string;

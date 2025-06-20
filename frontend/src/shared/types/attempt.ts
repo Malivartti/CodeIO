@@ -34,7 +34,7 @@ export interface AttemptForListPublic {
   programming_language: ProgrammingLanguage;
   time_used_ms: number;
   memory_used_bytes: number;
-  failed_test_number: number | null;
+  failed_test_number: number | undefined;
   created_at: string;
 }
 

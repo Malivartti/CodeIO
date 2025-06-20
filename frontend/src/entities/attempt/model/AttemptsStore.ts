@@ -191,7 +191,7 @@ class AttemptsStore {
         programming_language: language,
         time_used_ms: 0,
         memory_used_bytes: 0,
-        failed_test_number: null,
+        failed_test_number: undefined,
         created_at: new Date().toISOString(),
       };
 
