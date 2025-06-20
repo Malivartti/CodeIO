@@ -6,7 +6,6 @@ from app.auth.deps import (
     CurrentUser,
     OptionalCurrentUser,
     get_current_active_superuser,
-    get_current_active_user,
 )
 from app.auth.models import Message
 from app.store import StoreDep
@@ -17,17 +16,14 @@ from .exceptions import (
     TaskNotFoundException,
 )
 from .models import (
-    DifficultyEnum,
-    SortByEnum,
-    SortOrderEnum,
     Tag,
     TagCreate,
     TagsPublic,
     TagUpdate,
     Task,
     TaskCreate,
+    TaskFilters,
     TasksPublic,
-    TaskStatusEnum,
     TaskUpdate,
 )
 
@@ -36,46 +32,28 @@ tags_router = APIRouter(prefix="/tags", tags=["tags"])
 
 
 # === ОПЕРАЦИИ С ЗАДАЧАМИ (тег "tasks") ===
-
-
-@tasks_router.get(
-    "",
-    response_model=TasksPublic,
-)
+@tasks_router.get("", response_model=TasksPublic)
 async def get_tasks(
     store: StoreDep,
     optional_user: OptionalCurrentUser,
-    skip: int = Query(0, ge=0),
-    limit: int = Query(100, ge=1, le=1000),
-    search: str | None = None,
-    sort_by: SortByEnum = SortByEnum.id,
-    sort_order: SortOrderEnum = SortOrderEnum.asc,
-    statuses: Annotated[list[TaskStatusEnum] | None, Query()] = None,
-    difficulties: Annotated[list[DifficultyEnum] | None, Query()] = None,
-    tag_ids: Annotated[list[int] | None, Query()] = None,
+    filters: Annotated[TaskFilters, Query()],
 ) -> Any:
     tasks_data = await store.task.get_tasks_with_filters(
         user_id=optional_user.id if optional_user else None,
-        skip=skip,
-        limit=limit,
-        search=search,
-        sort_by=sort_by,
-        sort_order=sort_order,
-        statuses=statuses,
-        difficulties=difficulties,
-        tag_ids=tag_ids,
-        with_private=optional_user.is_superuser if optional_user else False,
+        **filters.model_dump(mode="python", exclude_none=True),
     )
-
-    return TasksPublic(data=tasks_data["tasks"], count=tasks_data["count"])  # pyright: ignore[reportArgumentType]
+    return TasksPublic(data=tasks_data["tasks"], count=tasks_data["count"])  # type: ignore[reportArgumentType]
 
 
 @tasks_router.post(
     "",
-    dependencies=[Depends(get_current_active_user)],
     response_model=Task,
 )
-async def create_task(store: StoreDep, task_in: TaskCreate) -> Any:
+async def create_task(
+    store: StoreDep, current_user: CurrentUser, task_in: TaskCreate
+) -> Any:
+    if task_in.user_id is None:
+        task_in.user_id = current_user.id
     return await store.task.create_task(task_create=task_in)
 
 
@@ -144,7 +122,6 @@ async def get_task_tags(store: StoreDep, task_id: int) -> Any:
 
 @tasks_router.post(
     "/{task_id}/tags/{tag_id}",
-    dependencies=[Depends(get_current_active_superuser)],
 )
 async def add_tag_to_task(
     store: StoreDep, task_id: int, tag_id: int
@@ -155,7 +132,6 @@ async def add_tag_to_task(
 
 @tasks_router.delete(
     "/{task_id}/tags/{tag_id}",
-    dependencies=[Depends(get_current_active_superuser)],
 )
 async def remove_tag_from_task(
     store: StoreDep, task_id: int, tag_id: int

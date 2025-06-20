@@ -110,7 +110,9 @@ class AttemptAccessor(BaseAccessor):
             if not attempt:
                 raise AttemptNotFoundException
 
-            update_data = attempt_update.model_dump(exclude_unset=True)
+            update_data = attempt_update.model_dump(
+                exclude_unset=True, exclude_none=True
+            )
 
             for field, value in update_data.items():
                 setattr(attempt, field, value)

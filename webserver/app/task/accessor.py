@@ -28,6 +28,7 @@ from .models import (
     Task,
     TaskCreate,
     TaskStatusEnum,
+    TasksTypeEnum,
     TaskTagLink,
     TaskUpdate,
     TaskWithAttemptStatus,
@@ -63,24 +64,24 @@ class TaskAccessor(BaseAccessor):
         else:
             return result
 
-    async def get_tasks_with_filters(  # noqa: C901, PLR0912
+    async def get_tasks_with_filters(  # noqa: C901, PLR0912, PLR0915
         self,
         *,
         user_id: UUID | None = None,
-        skip: int = 0,
-        limit: int = 100,
+        tasks_type: TasksTypeEnum = TasksTypeEnum.public,
         search: str | None = None,
         sort_by: SortByEnum = SortByEnum.id,
         sort_order: SortOrderEnum = SortOrderEnum.asc,
         statuses: list[TaskStatusEnum] | None = None,
         difficulties: list[DifficultyEnum] | None = None,
         tag_ids: list[int] | None = None,
-        with_private: bool | None = False,
+        skip: int = 0,
+        limit: int = 100,
     ) -> TasksDict:
         try:
             base_query = select(Task)
 
-            if user_id is not None and statuses:
+            if user_id is not None:
                 status_subq = (
                     select(
                         Attempt.task_id,
@@ -111,39 +112,43 @@ class TaskAccessor(BaseAccessor):
                     ).label("user_attempt_status")
                 )  # type: ignore[assignment]
 
-                filters = []
-                if any(
-                    s in statuses
-                    for s in [
-                        TaskStatusEnum.solved,
-                        TaskStatusEnum.attempted,
-                    ]
-                ):
-                    filters.append(
-                        status_subq.c.user_attempt_status.in_(
-                            [
-                                s.value
-                                for s in statuses
-                                if s
-                                in [
-                                    TaskStatusEnum.solved,
-                                    TaskStatusEnum.attempted,
+                if statuses:
+                    filters = []
+                    if any(
+                        s in statuses
+                        for s in [
+                            TaskStatusEnum.solved,
+                            TaskStatusEnum.attempted,
+                        ]
+                    ):
+                        filters.append(
+                            status_subq.c.user_attempt_status.in_(
+                                [
+                                    s.value
+                                    for s in statuses
+                                    if s
+                                    in [
+                                        TaskStatusEnum.solved,
+                                        TaskStatusEnum.attempted,
+                                    ]
                                 ]
-                            ]
+                            )
                         )
-                    )
-                if TaskStatusEnum.todo in statuses:
-                    filters.append(status_subq.c.user_attempt_status.is_(None))
+                    if TaskStatusEnum.todo in statuses:
+                        filters.append(
+                            status_subq.c.user_attempt_status.is_(None)
+                        )
 
-                base_query = base_query.where(or_(*filters))
+                    base_query = base_query.where(or_(*filters))
 
             if search:
                 base_query = base_query.where(
                     col(Task.title).ilike(f"%{search}%")
                 )
-
-            if not with_private:
+            if tasks_type == TasksTypeEnum.public:
                 base_query = base_query.where(col(Task.is_public) == True)  # noqa: E712
+            elif tasks_type == TasksTypeEnum.personal and user_id is not None:
+                base_query = base_query.where(col(Task.user_id) == user_id)
 
             if difficulties:
                 base_query = base_query.where(
@@ -188,7 +193,7 @@ class TaskAccessor(BaseAccessor):
 
             tasks_list: list[TaskWithAttemptStatus] = []
             for row in tasks_with_status:
-                if user_id is not None and statuses:
+                if user_id is not None:
                     task, user_attempt_status = row
                     new_task = TaskWithAttemptStatus(
                         **task.model_dump(),

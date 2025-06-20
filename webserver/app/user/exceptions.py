@@ -69,3 +69,13 @@ class UserNotFoundException(NotFoundException):
 
     def __init__(self) -> None:
         super().__init__(detail=self.default_message)
+
+
+class UserWithoutAvatarException(HTTPException):
+    default_status_code = 404
+    default_message = "У пользователя нет аватарки"
+
+    def __init__(self) -> None:
+        super().__init__(
+            status_code=self.default_status_code, detail=self.default_message
+        )

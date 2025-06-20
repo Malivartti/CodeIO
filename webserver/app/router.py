@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 import app.attempt.api
 import app.auth.api
+import app.statistics.api
 import app.task.api
 import app.user.api
 
@@ -12,3 +13,4 @@ api_router.include_router(app.user.api.users_router)
 api_router.include_router(app.task.api.tasks_router)
 api_router.include_router(app.task.api.tags_router)
 api_router.include_router(app.attempt.api.router)
+api_router.include_router(app.statistics.api.router)
