@@ -21,6 +21,22 @@ repos:
           - --fix
       - id: ruff-format
 
+  - repo: local
+    hooks:
+      - id: eslint-frontend
+        name: ESLint (frontend)
+        entry: bash -c 'cd frontend && yarn lint:fix "${@/#frontend\//}"' --
+        language: system
+        files: ^frontend/.*\.(ts|tsx)$
+        pass_filenames: true
+
+      - id: stylelint-frontend
+        name: Stylelint (frontend)
+        entry: bash -c 'cd frontend && yarn lint:styles:fix "${@/#frontend\//}"' --
+        language: system
+        files: ^frontend/.*\.(css|scss|sass)$
+        pass_filenames: true
+
 ci:
   autofix_commit_msg: 🎨 [pre-commit.ci] Auto format from pre-commit.com hooks
   autoupdate_commit_msg: ⬆ [pre-commit.ci] pre-commit autoupdate

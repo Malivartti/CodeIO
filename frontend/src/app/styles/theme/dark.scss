@@ -1,0 +1,43 @@
+@variant dark {
+  /* brand */
+  --color-brand: oklch(66.6% 0.179 58.318deg); /* amber-600 */
+  --color-brand-hover: oklch(76.9% 0.188 70.08deg); /* amber-500 */
+  --color-brand-active: oklch(82.8% 0.189 84.429deg); /* amber-400  */
+
+  /* brand light */
+  --color-brand-light: oklch(47.3% 0.137 46.201deg); /* amber-800  */
+  --color-brand-light-hover:oklch(55.5% 0.163 48.998deg); /* amber-700  */
+  --color-brand-light-active: oklch(66.6% 0.179 58.318deg); /* amber-600 */
+
+  /* canvas */
+  --background-color-canvas: oklch(20.5% 0 0deg); /* neutral-900 */
+
+  /* surface */
+  --color-surface: oklch(26.9% 0 0deg); /* neutral-800 */
+  --color-surface-hover: oklch(37.1% 0 0deg); /* neutral-700 */
+  --color-surface-active: oklch(43.9% 0 0deg); /* neutral-600 */
+  --border-color-surface: oklch(55.6% 0 0deg); /* neutral-500 */
+
+  /* surface accent */
+  --color-surface-accent: oklch(70.8% 0 0deg); /* neutral-400 */
+  --background-color-surface-accent: oklch(43.9% 0 0deg); /* neutral-600 */
+
+  /* surface unaccent */
+  --color-surface-unaccent: oklch(37.1% 0 0deg); /* neutral-700 */
+
+  /* text/icons */
+  --color-strong: oklch(87.2% 0.01 258.338deg); /* neutral-300 */
+  --color-medium: oklch(70.8% 0 0deg); /* neutral-400 */
+  --color-subtle: oklch(55.6% 0 0deg); /* neutral-500 */
+  --color-inverse: oklch(20.5% 0 0deg); /* neutral-900 */
+
+  /* semantic */
+  --color-success: oklch(65.69% 0.131 151.328deg); /* green-600  */
+  --color-warning: oklch(75.22% 0.134 83.632deg); /* yellow-500 */
+  --color-error: oklch(62.8% 0.257 29.234deg); /* red-500 */
+  --color-info: oklch(69.71% 0.123 252.417deg); /* blue-500 */
+
+  /* spesific */
+  --color-overlay: color-mix(in srgb, oklch(0% 0 0deg) 70%, transparent); /* black */
+  --color-disabled: oklch(43.9% 0 0deg); /* neutral-600 */
+}

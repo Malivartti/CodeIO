@@ -1,0 +1,13 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_425_4503)">
+<path d="M13.9 14.7C13.3 15.3 12.6 15.6 11.8 15.6C11 15.6 10.2 15.3 9.70005 14.7C9.10005 14.1 8.80005 13.4 8.80005 12.6C8.80005 11.8 9.10005 11 9.70005 10.5L11.8 12.6L13.9 14.7Z" stroke="currentColor" stroke-width="1.6" data-darkreader-inline-stroke="" style="--darkreader-inline-stroke: var(--darkreader-text-222222, #d3cfc9);" class="my-path"/>
+<path d="M4 4.7998L19.6 20.3998" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" data-darkreader-inline-stroke="" style="--darkreader-inline-stroke: var(--darkreader-text-222222, #d3cfc9);" class="my-path"/>
+<path d="M17.7 18.4998C16 19.5998 14 20.1998 11.8 20.1998C7.70003 20.1998 4.10002 17.8998 2.30002 14.4998C1.60002 13.3998 1.60002 11.9998 2.30002 10.8998C3.20002 9.19981 4.50002 7.7998 6.10002 6.7998" stroke="currentColor" stroke-width="1.6" data-darkreader-inline-stroke="" style="--darkreader-inline-stroke: var(--darkreader-text-222222, #d3cfc9);" class="my-path"/>
+<path d="M8.40002 5.7001C9.50002 5.3001 10.6 5.1001 11.8 5.1001C15.9 5.1001 19.5 7.4001 21.3 10.8001C21.9 11.9001 21.9 13.3001 21.3 14.4001C20.8 15.3001 20.2 16.1001 19.5 16.8001" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" data-darkreader-inline-stroke="" style="--darkreader-inline-stroke: var(--darkreader-text-222222, #d3cfc9);" class="my-path"/>
+</g>
+<defs>
+<clipPath id="clip0_425_4503">
+<rect width="21.6" height="17.2" fill="white" transform="translate(1 4)" data-darkreader-inline-fill="" style="--darkreader-inline-fill: var(--darkreader-text-ffffff, #e8e6e3);"/>
+</clipPath>
+</defs>
+</svg>

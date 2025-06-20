@@ -1,0 +1,45 @@
+/* stylelint-disable at-rule-no-deprecated */
+.prose h1 {
+  @apply text-2xl font-bold text-strong mb-1 mt-0;
+}
+
+.prose h2 {
+  @apply text-xl font-bold text-strong mb-1 mt-0;
+}
+
+.prose h3 {
+  @apply text-lg font-bold text-strong mb-1 mt-0;
+}
+
+.prose div {
+  @apply text-strong mb-1 mt-0;
+}
+
+.prose ul,
+.prose ol {
+  @apply pl-6 mb-1 mt-0;
+}
+
+.prose li {
+  @apply text-strong m-0;
+}
+
+.prose pre {
+  @apply bg-surface p-2 rounded-md overflow-x-auto mb-1 mt-0;
+}
+
+.prose code {
+  @apply bg-surface px-1 py-0.5 rounded text-strong mb-1 mt-0;
+}
+
+.prose strong {
+  @apply font-semibold text-strong;
+}
+
+.prose em {
+  @apply italic text-medium;
+}
+
+.prose blockquote {
+  @apply border-l-4 border-surface-accent pl-1 italic text-medium  m-1 mt-0;
+}
