@@ -104,6 +104,16 @@ class Settings(BaseSettings):
             else:
                 raise ValueError(message)
 
+    RABBITMQ_DEFAULT_USER: str
+    RABBITMQ_DEFAULT_PASS: str
+    RABBITMQ_HOST: str
+    RABBITMQ_PORT: int = 5672
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def RABBITMQ_URL(self) -> str:  # noqa: N802
+        return f"amqp://{self.RABBITMQ_DEFAULT_USER}:{self.RABBITMQ_DEFAULT_PASS}@{self.RABBITMQ_HOST}:{self.RABBITMQ_PORT}/"
+
     @model_validator(mode="after")
     def _enforce_non_default_secrets(self) -> Self:
         self._check_default_secret("SECRET_KEY", self.SECRET_KEY)

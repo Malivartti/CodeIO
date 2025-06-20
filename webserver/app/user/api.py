@@ -1,7 +1,8 @@
 from typing import Any
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, File, UploadFile
+from fastapi.responses import FileResponse
 
 from app.auth.deps import (
     CurrentUser,
@@ -21,16 +22,20 @@ from app.core.security import (
 )
 from app.store import StoreDep
 
+from .avatar_file_manager import avatar_file_manager
 from .exceptions import (
     UserAlreadyExistsException,
     UserEmailMismatchException,
     UserNotFoundException,
     UserSameEmailException,
+    UserWithoutAvatarException,
 )
 from .models import (
+    Leaderboard,
     UserCreate,
     UserPublic,
     UsersPublic,
+    UserStats,
     UserUpdate,
     UserUpdateMe,
     UserUpdateMeEmail,
@@ -139,6 +144,46 @@ async def update_me_email_confirm(
     return Message(message="Email успешно изменен")
 
 
+@me_router.post("/avatar", response_model=UserPublic)
+async def upload_avatar(
+    store: StoreDep,
+    current_user: CurrentUser,
+    file: UploadFile = File(...),  # noqa: B008
+) -> Any:
+    if current_user.avatar_filename:
+        await avatar_file_manager.delete_avatar(current_user.avatar_filename)
+
+    filename = await avatar_file_manager.save_avatar(file)
+
+    user_update = UserUpdate(avatar_filename=filename)
+    return await store.user.update_user(
+        user_id=current_user.id, user_update=user_update
+    )
+
+
+@me_router.delete("/avatar", response_model=UserPublic)
+async def delete_avatar(
+    store: StoreDep,
+    current_user: CurrentUser,
+) -> Any:
+    if not current_user.avatar_filename:
+        raise UserWithoutAvatarException
+
+    await avatar_file_manager.delete_avatar(current_user.avatar_filename)
+
+    user_update = UserUpdate(avatar_filename=None)
+    return await store.user.update_user(
+        user_id=current_user.id, user_update=user_update
+    )
+
+
+@me_router.get("/stats", response_model=UserStats)
+async def get_user_stats(
+    store: StoreDep, current_user: CurrentUser, year: int | None = None
+) -> Any:
+    return await store.user.get_user_stats(user_id=current_user.id, year=year)
+
+
 # === ОПЕРАЦИИ С ПОЛЬЗОВАТЕЛЯМИ (тег "users") ===
 
 
@@ -151,6 +196,25 @@ async def get_users(store: StoreDep, skip: int = 0, limit: int = 100) -> Any:
     users_data = await store.user.get_users_with_count(skip=skip, limit=limit)
 
     return UsersPublic(data=users_data["users"], count=users_data["count"])  # pyright: ignore[reportArgumentType]
+
+
+@users_router.get("/avatar/{filename}")
+async def get_avatar(filename: str) -> FileResponse:
+    if not avatar_file_manager.file_exists(filename):
+        raise UserWithoutAvatarException
+
+    file_path = avatar_file_manager.get_file_path(filename)
+
+    return FileResponse(
+        path=file_path,
+        media_type="image/*",
+        headers={"Cache-Control": "public, max-age=3600"},
+    )
+
+
+@users_router.get("/leaderboard", response_model=Leaderboard)
+async def get_leaderboard(store: StoreDep, limit: int = 100) -> Any:
+    return await store.user.get_leaderboard(limit=limit)
 
 
 @users_router.get(

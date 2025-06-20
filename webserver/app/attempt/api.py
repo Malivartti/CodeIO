@@ -1,7 +1,11 @@
+import asyncio
 from typing import Any
 
 from fastapi import APIRouter, Depends, Query
 
+from app.attempt.code_execution_service import (
+    CodeExecutionServiceDep,
+)
 from app.auth.deps import (
     CurrentUser,
     get_current_active_superuser,
@@ -14,10 +18,11 @@ from .exceptions import (
     AttemptNotFoundException,
     AttemptUserMismatch,
 )
+from .execution_result_handler import ExecutionResultHandlerDep
 from .models import (
-    Attempt,
     AttemptCreate,
     AttemptPublic,
+    AttemptStatusEnum,
     AttemptUpdate,
 )
 
@@ -51,7 +56,7 @@ async def get_attempts(
 
 @router.get(
     "/{attempt_id}",
-    response_model=Attempt,
+    response_model=AttemptPublic,
 )
 async def get_attempt(
     store: StoreDep,
@@ -98,17 +103,84 @@ async def get_attempts_by_task(
 
 @router.post(
     "",
-    response_model=Attempt,
+    response_model=dict[str, Any],
 )
 async def create_attempt(
     store: StoreDep,
     current_user: CurrentUser,
     attempt_in: AttemptCreate,
+    code_execution_service: CodeExecutionServiceDep,
 ) -> Any:
     if not current_user.is_superuser and current_user.id != attempt_in.user_id:
         raise AttemptUserMismatch
 
-    return await store.attempt.create_attempt(attempt_create=attempt_in)
+    attempt = await store.attempt.create_attempt(attempt_create=attempt_in)
+
+    await code_execution_service.execute_attempt(attempt)
+
+    return {"id": attempt.id, "status": attempt.status}
+
+
+@router.get(
+    "/{attempt_id}/status",
+    response_model=dict[str, Any],
+)
+async def get_attempt_status(
+    store: StoreDep,
+    execution_result_handler: ExecutionResultHandlerDep,
+    current_user: CurrentUser,
+    attempt_id: int,
+    timeout_seconds: int = Query(30, ge=1, le=60),
+) -> Any:
+    """Long polling для получения статуса попытки"""
+    attempt = await store.attempt.get_attempt_by_id(attempt_id=attempt_id)
+    if not attempt:
+        raise AttemptNotFoundException
+
+    if not (current_user.is_superuser or current_user.id == attempt.user_id):
+        raise AttemptAccessDeniedException
+
+    if attempt.status != AttemptStatusEnum.RUNNING:
+        return {
+            "id": attempt.id,
+            "status": attempt.status,
+            "time_used_ms": attempt.time_used_ms,
+            "memory_used_bytes": attempt.memory_used_bytes,
+            "error_traceback": attempt.error_traceback,
+            "failed_test_number": attempt.failed_test_number,
+            "source_code_output": attempt.source_code_output,
+            "expected_output": attempt.expected_output,
+        }
+
+    event = execution_result_handler.add_pending_request(attempt_id)
+
+    try:
+        await asyncio.wait_for(event.wait(), timeout=timeout_seconds)
+
+        updated_attempt = await store.attempt.get_attempt_by_id(
+            attempt_id=attempt_id
+        )
+
+        if not updated_attempt:
+            raise AttemptNotFoundException
+    except TimeoutError:
+        return {"id": attempt.id, "status": attempt.status}
+    except Exception as e:
+        raise e
+
+    else:
+        return {
+            "id": updated_attempt.id,
+            "status": updated_attempt.status,
+            "time_used_ms": updated_attempt.time_used_ms,
+            "memory_used_bytes": updated_attempt.memory_used_bytes,
+            "error_traceback": updated_attempt.error_traceback,
+            "failed_test_number": updated_attempt.failed_test_number,
+            "source_code_output": updated_attempt.source_code_output,
+            "expected_output": updated_attempt.expected_output,
+        }
+    finally:
+        execution_result_handler.remove_pending_request(attempt_id)
 
 
 @router.patch(

@@ -42,7 +42,7 @@ def create_log(
     def log(
         exc: Exception,
         *,
-        level: Literal["warning", "error"] = "error",
+        level: Literal["warning", "error", "info"] = "error",
         additional_info: str = "",
     ) -> None:
         try:
@@ -57,6 +57,8 @@ def create_log(
         if additional_info:
             func_info = f"{func_name} {additional_info}"
 
+        if level == "info":
+            logger.info("%s в %s", prefix, func_info)
         if level == "warning":
             logger.warning("%s в %s", prefix, func_info)
         if level == "error":

@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from enum import StrEnum
 from uuid import UUID
 
+from pydantic import computed_field
 from sqlalchemy import (
     JSON,
     Column,
@@ -13,6 +14,11 @@ from sqlalchemy import (
     text,
 )
 from sqlmodel import Field, Relationship, SQLModel, col
+
+
+class TasksTypeEnum(StrEnum):
+    public = "public"
+    personal = "personal"
 
 
 class DifficultyEnum(StrEnum):
@@ -48,7 +54,7 @@ class TaskBase(SQLModel):
     title: str = Field(unique=True, max_length=255)
     description: str = Field(max_length=1000)
     difficulty: DifficultyEnum = Field(
-        sa_column=Column(SQLEnum(DifficultyEnum, name="difficulty_enum"))
+        sa_column=Column(SQLEnum(DifficultyEnum, name="difficulty_enum")),
     )
     time_limit_seconds: int
     memory_limit_megabytes: int
@@ -59,8 +65,15 @@ class TaskBase(SQLModel):
     is_public: bool = False
 
 
-class TaskCreate(TaskBase):
-    pass
+class TaskCreate(SQLModel):
+    user_id: UUID | None = None
+    title: str = Field(max_length=255)
+    description: str = Field(max_length=1000)
+    difficulty: DifficultyEnum
+    time_limit_seconds: int
+    memory_limit_megabytes: int
+    tests: list[list[list[str]]]
+    is_public: bool = False
 
 
 class TaskUpdate(SQLModel):
@@ -78,6 +91,7 @@ class Task(TaskBase, table=True):
     correct_attempts: int = Field(default=0)
     total_attempts: int = Field(default=0)
 
+    @computed_field  # type: ignore[prop-decorator]
     @property
     def acceptance(self) -> float:
         return (
@@ -123,13 +137,7 @@ class TaskWithAttemptStatus(TaskBase):
     correct_attempts: int
     total_attempts: int
 
-    @property
-    def acceptance(self) -> float:
-        return (
-            self.correct_attempts / self.total_attempts
-            if self.total_attempts > 0
-            else 0.0
-        )
+    acceptance: float
 
     user_attempt_status: TaskStatusEnum | None = None
 
@@ -141,8 +149,20 @@ class TaskPublic(TaskWithAttemptStatus):
     pass
 
 
+class TaskPublicForList(SQLModel):
+    id: int
+    title: str
+    difficulty: DifficultyEnum
+    acceptance: float
+    user_attempt_status: TaskStatusEnum | None = None
+    is_public: bool
+
+    created_at: datetime
+    updated_at: datetime
+
+
 class TasksPublic(SQLModel):
-    data: list[TaskPublic]
+    data: list[TaskPublicForList]
     count: int
 
 
@@ -176,6 +196,7 @@ class TagsPublic(SQLModel):
 
 
 class TaskFilters(SQLModel):
+    tasks_type: TasksTypeEnum | None = None
     search: str | None = None
     statuses: list[TaskStatusEnum] | None = None
     difficulties: list[DifficultyEnum] | None = None

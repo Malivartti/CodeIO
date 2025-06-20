@@ -14,6 +14,7 @@ from app.core.context import (
 from app.core.db import SessionDep
 from app.core.exceptions import InternalException
 from app.core.logger import create_log
+from app.statistics.accessor import StatisticsAccessor
 from app.task.accessor import TaskAccessor
 from app.user.accessor import UserAccessor
 
@@ -26,6 +27,7 @@ class Store:
         self._user: UserAccessor | None = None
         self._task: TaskAccessor | None = None
         self._attempt: AttemptAccessor | None = None
+        self._statistics: StatisticsAccessor | None = None
 
     @asynccontextmanager
     async def transaction(self) -> AsyncGenerator["Store", Any]:
@@ -61,6 +63,12 @@ class Store:
         if self._attempt is None:
             self._attempt = AttemptAccessor(self.session)
         return self._attempt
+
+    @property
+    def statistics(self) -> StatisticsAccessor:
+        if self._statistics is None:
+            self._statistics = StatisticsAccessor(self.session)
+        return self._statistics
 
 
 def get_store(session: SessionDep) -> Store:

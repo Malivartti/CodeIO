@@ -51,7 +51,7 @@ class AttemptUpdate(SQLModel):
     time_used_ms: int | None = None
     memory_used_bytes: int | None = None
 
-    error_traceback: str | None = Field(default=None)
+    error_traceback: str | None = None
 
     failed_test_number: int | None = None
     source_code_output: str | None = None
@@ -69,11 +69,11 @@ class Attempt(AttemptBase, table=True):
     time_used_ms: int = Field(default=0)
     memory_used_bytes: int = Field(default=0)
 
-    error_traceback: str | None = Field(default=None)
+    error_traceback: str | None = Field(nullable=True)
 
-    failed_test_number: int | None = Field(default=None)
-    source_code_output: str | None = Field(default=None)
-    expected_output: str | None = Field(default=None)
+    failed_test_number: int | None = Field(nullable=True)
+    source_code_output: str | None = Field(nullable=True)
+    expected_output: str | None = Field(nullable=True)
 
     created_at: datetime = Field(
         sa_column=Column(
@@ -90,15 +90,24 @@ class AttemptPublic(AttemptBase):
     time_used_ms: int
     memory_used_bytes: int
 
-    error_traceback: str
-
-    failed_test_number: int
-    source_code_output: str
-    expected_output: str
+    error_traceback: str | None = None
+    failed_test_number: int | None = None
+    source_code_output: str | None = None
+    expected_output: str | None = None
 
     created_at: datetime
 
 
+class AttemptForListPublic(SQLModel):
+    id: int
+    status: AttemptStatusEnum
+    programming_language: ProgrammingLanguageEnum
+    time_used_ms: int
+    memory_used_bytes: int
+    failed_test_number: int
+    created_at: datetime
+
+
 class AttemptsPublic(SQLModel):
-    data: list[AttemptPublic]
+    data: list[AttemptForListPublic]
     count: int
