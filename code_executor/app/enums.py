@@ -2,19 +2,19 @@ from enum import StrEnum
 
 
 class ProgrammingLanguage(StrEnum):
-    PYTHON = "python"
-    JAVASCRIPT = "javaScript"
-    CPP = "c++"
-    GO = "go"
-    RUST = "rust"
-    C = "c"
-    JAVA = "java"
-    KOTLIN = "kotlin"
-    C_SHARP = "c#"
+    PYTHON = "Python"
+    JAVASCRIPT = "JavaScript"
+    CPP = "C++"
+    GO = "Go"
+    RUST = "Rust"
+    C = "C"
+    JAVA = "Java"
+    KOTLIN = "Kotlin"
+    C_SHARP = "C#"
 
 
 class ExecutionStatus(StrEnum):
-    OK = "OK"
+    OK = "Ok"
     COMPILATION_ERROR = "Compilation error"
     WRONG_ANSWER = "Wrong answer"
     TIME_LIMIT_EXCEEDED = "Time-limit exceeded"

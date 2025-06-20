@@ -124,9 +124,14 @@ class CommandRunner:
 
     @staticmethod
     def _self_peak() -> float:
-        return resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss / (
-            1024 if sys.platform != "darwin" else 1024 * 1024
-        )
+        """Возвращает пиковое использование памяти в мегабайтах"""
+        usage = resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss
+        if sys.platform == "darwin":
+            # На macOS ru_maxrss возвращается в байтах
+            return usage / (1024 * 1024)
+
+        # На Linux ru_maxrss возвращается в килобайтах
+        return usage / 1024
 
     @staticmethod
     def _set_limits(sec: int, mem_mb: int, is_compilation: bool) -> None:

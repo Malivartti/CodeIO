@@ -60,8 +60,8 @@ class AttemptExecutor:
             return AttemptExecutionResult(
                 id=self.attempt.id,
                 status=ExecutionStatus.OK,
-                time_used_seconds=round(max_t, 3),
-                memory_used_megabytes=int(max_m),
+                time_used_ms=int(max_t * 1000),
+                memory_used_bytes=int(max_m * 1024 * 1024),
             )
 
     def _compile(self, src: Path, exe: Path) -> RunResult | None:
@@ -109,7 +109,7 @@ class AttemptExecutor:
         return AttemptExecutionResult(
             id=self.attempt.id,
             status=status,
-            error_traceback=res.stderr.splitlines() or ["Compilation failure"],
+            error_traceback=res.stderr,
         )
 
     def _build_run_cmd(self, src: Path, exe: Path) -> list[str]:
@@ -181,8 +181,8 @@ class AttemptExecutor:
                 id=self.attempt.id,
                 status=ExecutionStatus.WRONG_ANSWER,
                 failed_test_number=idx,
-                source_code_output=res.stdout.splitlines(),
-                expected_output=list(expected_out),
+                source_code_output=res.stdout,
+                expected_output="\n".join(list(expected_out)),
             )
 
         return res.elapsed, res.peak_mb  # успешный тест
@@ -202,10 +202,10 @@ class AttemptExecutor:
             id=self.attempt.id,
             status=status,
             failed_test_number=idx,
-            error_traceback=err.splitlines() if err else None,
-            source_code_output=output.splitlines() if output else None,
-            memory_used_megabytes=int(mem) if mem else None,
-            time_used_seconds=round(time, 3) if time else None,
+            error_traceback=err,
+            source_code_output=output,
+            memory_used_bytes=int(mem * 1024 * 1024) if mem else None,
+            time_used_ms=int(time * 1000) if time else None,
         )
 
     def _signal_failure(
