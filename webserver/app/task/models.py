@@ -13,7 +13,7 @@ from sqlalchemy import (
     func,
     text,
 )
-from sqlmodel import Field, Relationship, SQLModel, col
+from sqlmodel import Field, ForeignKey, Relationship, SQLModel, col
 
 
 class TasksTypeEnum(StrEnum):
@@ -50,7 +50,9 @@ class TaskTagLink(SQLModel, table=True):
 
 
 class TaskBase(SQLModel):
-    user_id: UUID = Field(foreign_key="user.id")
+    user_id: UUID = Field(
+        sa_column=Column(ForeignKey("user.id", ondelete="CASCADE"))
+    )
     title: str = Field(unique=True, max_length=255)
     description: str = Field(max_length=1000)
     difficulty: DifficultyEnum = Field(

@@ -8,6 +8,7 @@ class TasksStore {
   isInitialLoading = false;
   isFilterLoading = false;
   loadingMore = false;
+  isDeleting = false;
   error: string | null = null;
   filters: TasksFilters = {
     tasks_type: TasksType.PUBLIC,
@@ -114,6 +115,31 @@ class TasksStore {
       runInAction(() => {
         this.isInitialLoading = false;
         this.isFilterLoading = false;
+      });
+    }
+  }
+
+  async deleteTask(taskId: number): Promise<boolean> {
+    this.isDeleting = true;
+    this.error = null;
+
+    try {
+      await taskAPI.deleteTask(Number(taskId));
+      runInAction(() => {
+        if (this.data) {
+          this.data.data = this.data.data.filter(task => task.id !== taskId);
+          this.data.count -= 1;
+        }
+      });
+      return true;
+    } catch (error: any) {
+      runInAction(() => {
+        this.error = error.response?.data?.detail || error.message || 'Произошла ошибка при удалении задачи';
+      });
+      return false;
+    } finally {
+      runInAction(() => {
+        this.isDeleting = false;
       });
     }
   }

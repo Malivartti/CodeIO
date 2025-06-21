@@ -35,6 +35,30 @@ export const taskAPI = {
     return response.data;
   },
 
+  async updateTask(taskId: number, taskData: TaskUpdate): Promise<Task> {
+    const response = await apiClient.patch(`/tasks/${taskId}`, taskData);
+    return response.data;
+  },
+
+  async deleteTask(taskId: number): Promise<{ message: string }> {
+    const response = await apiClient.delete(`/tasks/${taskId}`);
+    return response.data;
+  },
+
+  async getTaskById(taskId: number): Promise<Task> {
+    const response: AxiosResponse<TaskApi> = await apiClient.get(`/tasks/${taskId}`);
+    const task: Task = {
+      ...response.data,
+      tests: response.data.tests.map(test => ({
+        id: Date.now(),
+        inputs: test[0],
+        outputs: test[1],
+      }) as TestCase),
+    };
+
+    return task;
+  },
+
   async addTagToTask(taskId: number, tagId: number): Promise<void> {
     await apiClient.post(`/tasks/${taskId}/tags/${tagId}`);
   },
@@ -108,24 +132,5 @@ export const taskAPI = {
     }
 
     return result;
-  },
-
-  async updateTask(taskId: number, taskData: TaskUpdate): Promise<Task> {
-    const response = await apiClient.patch(`/tasks/${taskId}`, taskData);
-    return response.data;
-  },
-
-  async getTaskById(taskId: number): Promise<Task> {
-    const response: AxiosResponse<TaskApi> = await apiClient.get(`/tasks/${taskId}`);
-    const task: Task = {
-      ...response.data,
-      tests: response.data.tests.map(test => ({
-        id: Date.now(),
-        inputs: test[0],
-        outputs: test[1],
-      }) as TestCase),
-    };
-
-    return task;
   },
 };

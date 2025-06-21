@@ -3,7 +3,15 @@ from enum import StrEnum
 from uuid import UUID
 
 from sqlalchemy import Enum as SQLEnum
-from sqlmodel import Column, DateTime, Field, SQLModel, text
+from sqlmodel import (
+    Column,
+    DateTime,
+    Field,
+    ForeignKey,
+    Integer,
+    SQLModel,
+    text,
+)
 
 
 class AttemptStatusEnum(StrEnum):
@@ -32,8 +40,12 @@ class ProgrammingLanguageEnum(StrEnum):
 
 
 class AttemptBase(SQLModel):
-    user_id: UUID = Field(foreign_key="user.id")
-    task_id: int = Field(foreign_key="task.id")
+    user_id: UUID = Field(
+        sa_column=Column(ForeignKey("user.id", ondelete="CASCADE"))
+    )
+    task_id: int = Field(
+        sa_column=Column(Integer, ForeignKey("task.id", ondelete="CASCADE"))
+    )
     programming_language: ProgrammingLanguageEnum = Field(
         sa_column=Column(
             SQLEnum(ProgrammingLanguageEnum, name="programming_language_enum")

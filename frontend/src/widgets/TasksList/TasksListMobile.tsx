@@ -10,6 +10,7 @@ interface Props {
   showPersonal: boolean;
   isFilterLoading: boolean;
   loadingMore: boolean;
+  onDeleteClick: (e: React.MouseEvent, taskId: number, taskTitle: string) => void;
 }
 
 const TasksListMobile: FC<Props> = ({
@@ -18,6 +19,7 @@ const TasksListMobile: FC<Props> = ({
   showPersonal,
   isFilterLoading,
   loadingMore,
+  onDeleteClick,
 }) => {
   return (
     <>
@@ -31,6 +33,7 @@ const TasksListMobile: FC<Props> = ({
             task={task}
             showStatus={showStatus}
             showPersonal={showPersonal}
+            onDeleteClick={onDeleteClick}
           />
         ))}
       </div>

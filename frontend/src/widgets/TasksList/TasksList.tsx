@@ -1,10 +1,18 @@
+import { tasksStore } from '@entities/task';
 import { TaskPublicForList } from '@shared/types/task';
+import ConfirmModal from '@shared/ui/ConfirmModal';
 import { default as cn } from 'classnames';
-import { FC } from 'react';
+import React, { FC, useState } from 'react';
 
 import TasksListDesktop from './TasksListDesktop';
 import TasksListMobile from './TasksListMobile';
 import TasksListSkeleton from './TasksListSkeleton';
+
+interface DeleteModalState {
+  isOpen: boolean;
+  taskId: number | null;
+  taskTitle: string;
+}
 
 interface Props {
   className?: string;
@@ -25,6 +33,45 @@ const TasksList: FC<Props> = ({
   isFilterLoading = false,
   loadingMore = false,
 }) => {
+  const [deleteModal, setDeleteModal] = useState<DeleteModalState>({
+    isOpen: false,
+    taskId: null,
+    taskTitle: '',
+  });
+
+  const handleDeleteClick = (e: React.MouseEvent, taskId: number, taskTitle: string) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setDeleteModal({
+      isOpen: true,
+      taskId,
+      taskTitle,
+    });
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteModal.taskId) return;
+
+    const success = await tasksStore.deleteTask(deleteModal.taskId);
+    if (success) {
+      setDeleteModal({
+        isOpen: false,
+        taskId: null,
+        taskTitle: '',
+      });
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    if (tasksStore.isDeleting) return;
+
+    setDeleteModal({
+      isOpen: false,
+      taskId: null,
+      taskTitle: '',
+    });
+  };
+
   if (showSkeleton) {
     return (
       <TasksListSkeleton
@@ -46,27 +93,43 @@ const TasksList: FC<Props> = ({
   }
 
   return (
-    <div className={className}>
-      <div className="block md:hidden">
-        <TasksListMobile
-          tasks={tasks}
-          showStatus={showStatus}
-          showPersonal={showPersonal}
-          isFilterLoading={isFilterLoading}
-          loadingMore={loadingMore}
-        />
+    <>
+      <div className={className}>
+        <div className="block md:hidden">
+          <TasksListMobile
+            tasks={tasks}
+            showStatus={showStatus}
+            showPersonal={showPersonal}
+            isFilterLoading={isFilterLoading}
+            loadingMore={loadingMore}
+            onDeleteClick={handleDeleteClick}
+          />
+        </div>
+
+        <div className="hidden md:block">
+          <TasksListDesktop
+            tasks={tasks}
+            showStatus={showStatus}
+            showPersonal={showPersonal}
+            isFilterLoading={isFilterLoading}
+            loadingMore={loadingMore}
+            onDeleteClick={handleDeleteClick}
+          />
+        </div>
       </div>
 
-      <div className="hidden md:block">
-        <TasksListDesktop
-          tasks={tasks}
-          showStatus={showStatus}
-          showPersonal={showPersonal}
-          isFilterLoading={isFilterLoading}
-          loadingMore={loadingMore}
-        />
-      </div>
-    </div>
+      <ConfirmModal
+        isOpen={deleteModal.isOpen}
+        title="Удаление задачи"
+        message={`Вы уверены, что хотите удалить задачу "${deleteModal.taskTitle}"? Это действие нельзя отменить.`}
+        confirmText="Удалить"
+        cancelText="Отмена"
+        confirmVariant="danger"
+        isLoading={tasksStore.isDeleting}
+        onConfirm={handleDeleteConfirm}
+        onCancel={handleDeleteCancel}
+      />
+    </>
   );
 };
 

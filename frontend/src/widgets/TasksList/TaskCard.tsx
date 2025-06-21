@@ -1,4 +1,5 @@
 import AttemptedIcon from '@shared/assets/icons/Attempted.svg';
+import DeleteIcon from '@shared/assets/icons/Delete.svg';
 import EditIcon from '@shared/assets/icons/Edit.svg';
 import HideIcon from '@shared/assets/icons/Hide.svg';
 import SolvedIcon from '@shared/assets/icons/Solved.svg';
@@ -13,9 +14,10 @@ interface Props {
   task: TaskPublicForList;
   showStatus: boolean;
   showPersonal: boolean;
+  onDeleteClick: (e: React.MouseEvent, taskId: number, taskTitle: string) => void;
 }
 
-const TaskCard: FC<Props> = ({ task, showStatus, showPersonal }) => {
+const TaskCard: FC<Props> = ({ task, showStatus, showPersonal, onDeleteClick }) => {
   const navigate = useNavigate();
 
   const handleTaskClick = (event: React.MouseEvent | React.KeyboardEvent) => {
@@ -73,15 +75,27 @@ const TaskCard: FC<Props> = ({ task, showStatus, showPersonal }) => {
     if (!showPersonal) return null;
 
     return (
-      <Tooltip content="Редактировать" position="top">
-        <button
-          type="button"
-          className="flex items-center border border-surface bg-canvas hover:bg-surface-hover active:bg-surface-active rounded-md p-2 transition-colors"
-          onClick={handleEditTask}
-        >
-          <EditIcon width={16} height={16} className="text-medium" />
-        </button>
-      </Tooltip>
+      <div className="flex items-center gap-2">
+        <Tooltip content="Редактировать" position="top">
+          <button
+            type="button"
+            className="flex items-center border border-surface bg-canvas hover:bg-surface-hover active:bg-surface-active rounded-md p-2 transition-colors"
+            onClick={handleEditTask}
+          >
+            <EditIcon width={16} height={16} className="text-medium" />
+          </button>
+        </Tooltip>
+
+        <Tooltip content="Удалить" position="top">
+          <button
+            type="button"
+            className="flex items-center border border-surface bg-canvas hover:bg-surface-hover active:bg-surface-active rounded-md p-2 transition-colors hover:text-error hover:border-error"
+            onClick={(e) => onDeleteClick(e, task.id, task.title)}
+          >
+            <DeleteIcon width={16} height={16} className="text-medium" />
+          </button>
+        </Tooltip>
+      </div>
     );
   };
 
