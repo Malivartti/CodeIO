@@ -2,7 +2,7 @@ import axios from 'axios';
 
 import { setupInterceptors } from './interceptors';
 
-export const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8001/api/v1';
+export const API_BASE_URL = process.env.REACT_APP_BACKEND_URL + '/api/v1';
 
 
 export const apiClient = axios.create({

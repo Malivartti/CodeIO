@@ -6,7 +6,6 @@ from pydantic import (
     AnyUrl,
     BeforeValidator,
     EmailStr,
-    HttpUrl,
     PostgresDsn,
     computed_field,
     model_validator,
@@ -24,8 +23,6 @@ def parse_cors(v: Any) -> list[str] | str:
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        # Use top level .env file (one level above ./backend/)
-        env_file="../.env",
         env_ignore_empty=True,
         extra="ignore",
     )
@@ -34,7 +31,7 @@ class Settings(BaseSettings):
     # 24 hours * days = days
     ACCESS_TOKEN_EXPIRE_HOURS: int = 24 * 1
     REFRESH_TOKEN_EXPIRE_HOURS: int = 24 * 7
-    FRONTEND_HOST: str = "http://localhost:5173"
+    FRONTEND_HOST: str
     ENVIRONMENT: Literal["local", "staging", "production"] = "local"
 
     BACKEND_CORS_ORIGINS: Annotated[
@@ -49,12 +46,11 @@ class Settings(BaseSettings):
         ] + [self.FRONTEND_HOST]
 
     PROJECT_NAME: str
-    SENTRY_DSN: HttpUrl | None = None
     POSTGRES_SERVER: str
-    POSTGRES_PORT: int = 5432
+    POSTGRES_PORT: int
     POSTGRES_USER: str
-    POSTGRES_PASSWORD: str = ""
-    POSTGRES_DB: str = ""
+    POSTGRES_PASSWORD: str
+    POSTGRES_DB: str
 
     @computed_field  # type: ignore[prop-decorator]
     @property
@@ -107,7 +103,7 @@ class Settings(BaseSettings):
     RABBITMQ_DEFAULT_USER: str
     RABBITMQ_DEFAULT_PASS: str
     RABBITMQ_HOST: str
-    RABBITMQ_PORT: int = 5672
+    RABBITMQ_PORT: int
 
     @computed_field  # type: ignore[prop-decorator]
     @property

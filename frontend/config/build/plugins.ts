@@ -27,11 +27,19 @@ export function buildPlugins(options: BuildOptions): WebpackPluginInstance[] {
         },
       }),
     }),
+    new webpack.ProgressPlugin(),
 
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': JSON.stringify(
         isDev ? 'development' : 'production'
       ),
+
+      ...Object.keys(process.env)
+        .filter(key => key.startsWith('REACT_APP_'))
+        .reduce((env, key) => {
+          env[`process.env.${key}`] = JSON.stringify(process.env[key]);
+          return env;
+        }, {} as Record<string, string>),
     }),
   ];
 

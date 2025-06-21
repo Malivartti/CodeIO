@@ -2,24 +2,51 @@ services:
   postgres:
     image: postgres:17
     container_name: codeio_postgres
-    restart: always
-    env_file:
-      - .env
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
       interval: 10s
       timeout: 5s
       retries: 3
+      start_period: 10s
+    env_file:
+      - .env
+    environment:
+      - PGDATA=/var/lib/postgresql/data/pgdata
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD?Variable not set}
+      - POSTGRES_USER=${POSTGRES_USER?Variable not set}
+      - POSTGRES_DB=${POSTGRES_DB?Variable not set}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - default
+
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: codeio_pgadmin
+    restart: unless-stopped
+    env_file:
+      - .env
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik-public
+      - traefik.constraint-label=traefik-public
+      - traefik.http.services.${STACK_NAME}-pgadmin.loadbalancer.server.port=80
+      - traefik.http.routers.${STACK_NAME}-pgadmin-https.rule=Host(`codeio-pgadmin.${DOMAIN}`)
+      - traefik.http.routers.${STACK_NAME}-pgadmin-https.entrypoints=https
+      - traefik.http.routers.${STACK_NAME}-pgadmin-https.tls=true
+      - traefik.http.routers.${STACK_NAME}-pgadmin-https.tls.certresolver=le
+    networks:
+      - traefik-public
+      - default
+    depends_on:
+      - postgres
+
 
   rabbitmq:
     image: rabbitmq:3-management
     container_name: codeio_rabbitmq
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "rabbitmqctl", "status"]
@@ -29,6 +56,13 @@ services:
       start_period: 20s
     env_file:
       - .env
+    environment:
+      - RABBITMQ_HOST=${RABBITMQ_HOST?Variable not set}
+      - RABBITMQ_PORT=${RABBITMQ_PORT?Variable not set}
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER?Variable not set}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS?Variable not set}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
     networks:
       - default
 
@@ -37,64 +71,92 @@ services:
       context: ./code_executor
     image: codeio_code_executor
     container_name: codeio_code_executor
-    restart: always
+    restart: unless-stopped
     env_file:
       - .env
+    environment:
+      - RABBITMQ_HOST=${RABBITMQ_HOST?Variable not set}
+      - RABBITMQ_PORT=${RABBITMQ_PORT?Variable not set}
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER?Variable not set}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS?Variable not set}
+    networks:
+      - default
     depends_on:
       rabbitmq:
         condition: service_healthy
-    networks:
-      - default
 
   webserver:
     build:
       context: ./webserver
     image: codeio_webserver
     container_name: codeio_webserver
-    restart: always
+    restart: unless-stopped
     env_file:
       - .env
+    environment:
+      - ENVIRONMENT=${ENVIRONMENT?Variable not set}
+      - FRONTEND_HOST=${FRONTEND_HOST?Variable not set}
+      - PROJECT_NAME=${PROJECT_NAME?Variable not set}
+      - BACKEND_CORS_ORIGINS=${BACKEND_CORS_ORIGINS?Variable not set}
+      - SECRET_KEY=${SECRET_KEY?Variable not set}
+      - FIRST_SUPERUSER_EMAIL=${FIRST_SUPERUSER_EMAIL?Variable not set}
+      - FIRST_SUPERUSER_PASSWORD=${FIRST_SUPERUSER_PASSWORD?Variable not set}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - EMAILS_FROM_EMAIL=${EMAILS_FROM_EMAIL}
+      - EMAIL_RESET_TOKEN_EXPIRE_HOURS=${EMAIL_RESET_TOKEN_EXPIRE_HOURS}
+      - POSTGRES_SERVER={POSTGRES_SERVER?Variable not set}
+      - POSTGRES_PORT=${POSTGRES_PORT?Variable not set}
+      - POSTGRES_DB=${POSTGRES_DB?Variable not set}
+      - POSTGRES_USER=${POSTGRES_USER?Variable not set}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD?Variable not set}
+      - RABBITMQ_HOST=${RABBITMQ_HOST?Variable not set}
+      - RABBITMQ_PORT=${RABBITMQ_PORT?Variable not set}
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER?Variable not set}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS?Variable not set}
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik-public
+      - traefik.constraint-label=traefik-public
+      - traefik.http.services.${STACK_NAME?Variable not set}-webserver.loadbalancer.server.port=8000
+      - traefik.http.routers.${STACK_NAME?Variable not set}-webserver-http.rule=Host(`codeio-api.${DOMAIN?Variable not set}`)
+      - traefik.http.routers.${STACK_NAME?Variable not set}-webserver-http.entrypoints=http
+      - traefik.http.routers.${STACK_NAME?Variable not set}-webserver-https.rule=Host(`codeio-api.${DOMAIN?Variable not set}`)
+      - traefik.http.routers.${STACK_NAME?Variable not set}-webserver-https.entrypoints=https
+      - traefik.http.routers.${STACK_NAME?Variable not set}-webserver-https.tls=true
+      - traefik.http.routers.${STACK_NAME?Variable not set}-webserver-https.tls.certresolver=le
+      - traefik.http.routers.${STACK_NAME?Variable not set}-webserver-http.middlewares=https-redirect
+    networks:
+      - traefik-public
+      - default
     depends_on:
       postgres:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-    labels:
-      - traefik.enable=true
-      - traefik.docker.network=traefik-public
-      - traefik.http.routers.codeio-backend.rule=Host(`api.${DOMAIN}`)
-      - traefik.http.routers.codeio-backend.entrypoints=https
-      - traefik.http.routers.codeio-backend.tls=true
-      - traefik.http.routers.codeio-backend.tls.certresolver=le
-      - traefik.http.services.codeio-backend.loadbalancer.server.port=8000
-      - traefik.http.routers.codeio-backend-http.rule=Host(`api.${DOMAIN}`)
-      - traefik.http.routers.codeio-backend-http.entrypoints=http
-      - traefik.http.routers.codeio-backend-http.middlewares=https-redirect
-    networks:
-      - traefik-public
-      - default
 
   frontend:
     build:
       context: ./frontend
       args:
-        - REACT_APP_API_URL=https://api.${DOMAIN}/api/v1
+        - REACT_APP_BACKEND_URL=https://codeio-api.${DOMAIN?Variable not set}
+        - NODE_ENV=production
     image: codeio_frontend
     container_name: codeio_frontend
-    restart: always
-    environment:
-      - NODE_ENV=production
+    restart: unless-stopped
     labels:
       - traefik.enable=true
       - traefik.docker.network=traefik-public
-      - traefik.http.routers.codeio-frontend.rule=Host(`codeio.${DOMAIN}`)
-      - traefik.http.routers.codeio-frontend.entrypoints=https
-      - traefik.http.routers.codeio-frontend.tls=true
-      - traefik.http.routers.codeio-frontend.tls.certresolver=le
-      - traefik.http.services.codeio-frontend.loadbalancer.server.port=80
-      - traefik.http.routers.codeio-frontend-http.rule=Host(`codeio.${DOMAIN}`)
-      - traefik.http.routers.codeio-frontend-http.entrypoints=http
-      - traefik.http.routers.codeio-frontend-http.middlewares=https-redirect
+      - traefik.constraint-label=traefik-public
+      - traefik.http.services.${STACK_NAME?Variable not set}-frontend.loadbalancer.server.port=80
+      - traefik.http.routers.${STACK_NAME?Variable not set}-frontend-http.rule=Host(`codeio.${DOMAIN?Variable not set}`)
+      - traefik.http.routers.${STACK_NAME?Variable not set}-frontend-http.entrypoints=http
+      - traefik.http.routers.${STACK_NAME?Variable not set}-frontend-https.rule=Host(`codeio.${DOMAIN?Variable not set}`)
+      - traefik.http.routers.${STACK_NAME?Variable not set}-frontend-https.entrypoints=https
+      - traefik.http.routers.${STACK_NAME?Variable not set}-frontend-https.tls=true
+      - traefik.http.routers.${STACK_NAME?Variable not set}-frontend-https.tls.certresolver=le
+      - traefik.http.routers.${STACK_NAME?Variable not set}-frontend-http.middlewares=https-redirect
     networks:
       - traefik-public
       - default

@@ -1,14 +1,10 @@
 import asyncio
 import os
 
-from dotenv import load_dotenv
-
 from app.rabbitmq_consumer import CodeExecutionWorker
 
 
 async def main():
-    load_dotenv("../.env")
-
     rabbitmq_default_user = os.getenv("RABBITMQ_DEFAULT_USER")
     rabbitmq_default_pass = os.getenv("RABBITMQ_DEFAULT_PASS")
     rabbitmq_host = os.getenv("RABBITMQ_HOST")

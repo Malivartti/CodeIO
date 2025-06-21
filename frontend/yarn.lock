@@ -2271,17 +2271,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/dotenv-webpack@npm:^7.0.8":
-  version: 7.0.8
-  resolution: "@types/dotenv-webpack@npm:7.0.8"
-  dependencies:
-    "@types/node": "npm:*"
-    tapable: "npm:^2.2.0"
-    webpack: "npm:^5"
-  checksum: 10c0/311399ecabd2c29a3067c3e202431084ae4239b51b99136aff06c4f6ad933a0130ac82172e8ca84dfd8b996a414326ae4d61e5ed50346702965df14542012c63
-  languageName: node
-  linkType: hard
-
 "@types/eslint-plugin-jsx-a11y@npm:^6":
   version: 6.10.0
   resolution: "@types/eslint-plugin-jsx-a11y@npm:6.10.0"
@@ -4023,7 +4012,6 @@ __metadata:
     "@tailwindcss/postcss": "npm:^4.1.10"
     "@tailwindcss/typography": "npm:^0.5.16"
     "@types/classnames": "npm:^2.3.4"
-    "@types/dotenv-webpack": "npm:^7.0.8"
     "@types/eslint-plugin-jsx-a11y": "npm:^6"
     "@types/html-webpack-plugin": "npm:^3.2.9"
     "@types/mini-css-extract-plugin": "npm:^2.5.1"
@@ -4042,7 +4030,6 @@ __metadata:
     axios: "npm:^1.9.0"
     classnames: "npm:^2.5.1"
     css-loader: "npm:^7.1.2"
-    dotenv-webpack: "npm:^8.1.0"
     eslint: "npm:^9.29.0"
     eslint-import-resolver-typescript: "npm:^4.4.3"
     eslint-plugin-import: "npm:^2.31.0"
@@ -4061,6 +4048,7 @@ __metadata:
     postcss: "npm:^8.5.5"
     postcss-load-config: "npm:^6.0.1"
     postcss-loader: "npm:^8.1.1"
+    process: "npm:^0.11.10"
     react: "npm:^19.1.0"
     react-dom: "npm:^19.1.0"
     react-markdown: "npm:^10.1.0"
@@ -4754,33 +4742,6 @@ __metadata:
     no-case: "npm:^3.0.4"
     tslib: "npm:^2.0.3"
   checksum: 10c0/5b859ea65097a7ea870e2c91b5768b72ddf7fa947223fd29e167bcdff58fe731d941c48e47a38ec8aa8e43044c8fbd15cd8fa21689a526bc34b6548197cd5b05
-  languageName: node
-  linkType: hard
-
-"dotenv-defaults@npm:^2.0.2":
-  version: 2.0.2
-  resolution: "dotenv-defaults@npm:2.0.2"
-  dependencies:
-    dotenv: "npm:^8.2.0"
-  checksum: 10c0/14b7b8f6c21a30404106384398728746e63405bfeabe47ef7aadd0e81de49986d5896a612e5b1acddf655af6472a24947b7b113aa3ef3270a2877afa9c5bd287
-  languageName: node
-  linkType: hard
-
-"dotenv-webpack@npm:^8.1.0":
-  version: 8.1.0
-  resolution: "dotenv-webpack@npm:8.1.0"
-  dependencies:
-    dotenv-defaults: "npm:^2.0.2"
-  peerDependencies:
-    webpack: ^4 || ^5
-  checksum: 10c0/7a64587fc96eba8e4ffccf56d6af09606611a32bc5cf04a37057b8c2881bcd11bf43c3395404581be734ae7fd2788471ceac76cb3d0ba1283e675223f98e5816
-  languageName: node
-  linkType: hard
-
-"dotenv@npm:^8.2.0":
-  version: 8.6.0
-  resolution: "dotenv@npm:8.6.0"
-  checksum: 10c0/6750431dea8efbd54b9f2d9681b04e1ccc7989486461dcf058bb708d9e3d63b04115fcdf8840e38ad1e24a4a2e1e7c1560626c5e3ac7bc09371b127c49e2d45f
   languageName: node
   linkType: hard
 
@@ -9013,6 +8974,13 @@ __metadata:
   version: 2.0.1
   resolution: "process-nextick-args@npm:2.0.1"
   checksum: 10c0/bec089239487833d46b59d80327a1605e1c5287eaad770a291add7f45fda1bb5e28b38e0e061add0a1d0ee0984788ce74fa394d345eed1c420cacf392c554367
+  languageName: node
+  linkType: hard
+
+"process@npm:^0.11.10":
+  version: 0.11.10
+  resolution: "process@npm:0.11.10"
+  checksum: 10c0/40c3ce4b7e6d4b8c3355479df77aeed46f81b279818ccdc500124e6a5ab882c0cc81ff7ea16384873a95a74c4570b01b120f287abbdd4c877931460eca6084b3
   languageName: node
   linkType: hard
 

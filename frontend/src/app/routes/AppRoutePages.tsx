@@ -93,7 +93,7 @@ export const AppRoutePages: TAppRoutePages[] = [
   {
     path: AppRoutes.TASK_CREATE,
     element: <TaskCreatePage />,
-    accessLevels: [AccessLevel.USER],
+    accessLevels: [AccessLevel.USER, AccessLevel.SUPERUSER],
   },
   {
     path: AppRoutes.TASK,
@@ -103,12 +103,12 @@ export const AppRoutePages: TAppRoutePages[] = [
   {
     path: AppRoutes.TASK_UPDATE,
     element: <TaskUpdatePage />,
-    accessLevels: [AccessLevel.USER],
+    accessLevels: [AccessLevel.USER, AccessLevel.SUPERUSER],
   },
   {
     path: AppRoutes.ATTEMPT,
     element: <AttemptPage />,
-    accessLevels: [AccessLevel.USER],
+    accessLevels: [AccessLevel.USER, AccessLevel.SUPERUSER],
   },
   {
     path: AppRoutes.LEADERBOARD,
@@ -118,7 +118,7 @@ export const AppRoutePages: TAppRoutePages[] = [
   {
     path: AppRoutes.CONFIRM_EMAIL_CHANGE,
     element: <ConfirmEmailChangePage />,
-    accessLevels: [AccessLevel.USER],
+    accessLevels: [AccessLevel.USER, AccessLevel.SUPERUSER],
   },
   {
     path: AppRoutes.FORGOT_PASSWORD,
