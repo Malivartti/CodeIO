@@ -16,7 +16,7 @@ class TasksStore {
     sort_by: SortByEnum.ID,
     sort_order: SortOrderEnum.ASC,
     skip: 0,
-    limit: 13,
+    limit: 30,
   };
   isFirstLoad = true;
 
@@ -54,7 +54,7 @@ class TasksStore {
       sort_by: SortByEnum.ID,
       sort_order: SortOrderEnum.ASC,
       skip: 0,
-      limit: 10,
+      limit: 30,
     };
     this.fetchTasks(false);
   };

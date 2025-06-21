@@ -109,7 +109,7 @@ const AttemptsTable: FC<AttemptsTableProps> = ({
                     to={NavigationHelpers.getAttemptUrl(attempt.id)}
                     className="text-brand hover:text-brand-hover transition-colors text-sm font-medium"
                   >
-                    Подробнее →
+                    Подробнее
                   </Link>
                 </div>
               </div>

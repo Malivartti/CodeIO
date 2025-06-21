@@ -8,11 +8,12 @@ from sqlmodel import col, select
 from app.core.accessor import BaseAccessor
 from app.core.exceptions import InternalException
 from app.core.logger import create_log
+from app.task.models import Task
 
 from .exceptions import (
     AttemptNotFoundException,
 )
-from .models import Attempt, AttemptCreate, AttemptUpdate
+from .models import Attempt, AttemptCreate, AttemptStatusEnum, AttemptUpdate
 
 log = create_log(
     __name__,
@@ -82,8 +83,24 @@ class AttemptAccessor(BaseAccessor):
         try:
             attempt = Attempt(**attempt_create.model_dump())
             self.session.add(attempt)
-            await self.commit()
-            await self.refresh(attempt)
+
+            if not self.session.in_transaction():
+                async with self.session.begin():
+                    await self.session.flush()
+
+                    task = await self.session.get(Task, attempt.task_id)
+                    if task:
+                        task.total_attempts += 1
+                        await self.commit()
+            else:
+                await self.session.commit()
+
+                task = await self.session.get(Task, attempt.task_id)
+                if task:
+                    task.total_attempts += 1
+                    await self.commit()
+
+            await self.session.refresh(attempt)
 
         except IntegrityError as e:
             await self.rollback()
@@ -110,12 +127,31 @@ class AttemptAccessor(BaseAccessor):
             if not attempt:
                 raise AttemptNotFoundException
 
+            old_status = attempt.status
             update_data = attempt_update.model_dump(
                 exclude_unset=True, exclude_none=True
             )
 
             for field, value in update_data.items():
                 setattr(attempt, field, value)
+
+            if (
+                attempt_update.status == AttemptStatusEnum.OK
+                and old_status != AttemptStatusEnum.OK
+            ):
+                existing_success = await self.session.execute(
+                    select(Attempt).where(
+                        Attempt.user_id == attempt.user_id,
+                        Attempt.task_id == attempt.task_id,
+                        Attempt.status == AttemptStatusEnum.OK,
+                        Attempt.id != attempt.id,
+                    )
+                )
+
+                if not existing_success.first():
+                    task = await self.session.get(Task, attempt.task_id)
+                    if task:
+                        task.correct_attempts += 1
 
             await self.commit()
             await self.refresh(attempt)
@@ -137,7 +173,28 @@ class AttemptAccessor(BaseAccessor):
             if not attempt:
                 raise AttemptNotFoundException
 
+            user_id = attempt.user_id
+            task_id = attempt.task_id
+            was_successful = attempt.status == AttemptStatusEnum.OK
+
             await self.session.delete(attempt)
+
+            task = await self.session.get(Task, task_id)
+            if task:
+                task.total_attempts -= 1
+
+                if was_successful:
+                    remaining_success = await self.session.execute(
+                        select(Attempt).where(
+                            Attempt.user_id == user_id,
+                            Attempt.task_id == task_id,
+                            Attempt.status == AttemptStatusEnum.OK,
+                        )
+                    )
+
+                    if not remaining_success.first():
+                        task.correct_attempts -= 1
+
             await self.commit()
 
         except AttemptNotFoundException as e:
