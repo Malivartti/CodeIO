@@ -87,15 +87,20 @@ class TaskAccessor(BaseAccessor):
                         Attempt.task_id,
                         sql_case(
                             (
-                                func.bool_or(
-                                    Attempt.status == AttemptStatusEnum.OK
-                                ),
+                                func.sum(
+                                    sql_case(
+                                        (
+                                            col(Attempt.status)
+                                            == AttemptStatusEnum.OK,
+                                            1,
+                                        ),
+                                        else_=0,
+                                    )
+                                )
+                                > 0,
                                 literal(TaskStatusEnum.solved),
                             ),
-                            (
-                                func.count(col(Attempt.id)) > 0,
-                                literal(TaskStatusEnum.attempted),
-                            ),
+                            else_=literal(TaskStatusEnum.attempted),
                         ).label("user_attempt_status"),
                     )
                     .where(Attempt.user_id == user_id)
