@@ -78,7 +78,6 @@ const TaskPage: FC = observer(() => {
     attemptsStore.clearError();
   }, []);
 
-  const hasAttempts = useMemo(() => attemptsStore.attempts.length > 0, [attemptsStore.attempts]);
   const numericTaskId = useMemo(() => taskId ? parseInt(taskId) : 0, [taskId]);
 
   if (taskStore.shouldNavigateToError) {
@@ -112,8 +111,6 @@ const TaskPage: FC = observer(() => {
     <div className="p-3 sm:p-4 lg:p-6 h-full overflow-auto">
       <TaskInfoSection
         task={taskStore.task}
-        isSolved={attemptsStore.isSolved}
-        hasAttempts={hasAttempts}
       />
     </div>
   );
@@ -148,7 +145,7 @@ const TaskPage: FC = observer(() => {
               attempts={attemptsStore.attempts}
               currentPage={attemptsStore.currentPage}
               totalItems={attemptsStore.totalAttempts}
-              itemsPerPage={7}
+              itemsPerPage={attemptsStore.itemsPerPage}
               onPageChange={handlePageChange}
               isLoading={attemptsStore.isLoading}
             />

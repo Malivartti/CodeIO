@@ -4,7 +4,7 @@ import MemoryIcon from '@shared/assets/icons/Memory.svg';
 import SolvedIcon from '@shared/assets/icons/Solved.svg';
 import TimeIcon from '@shared/assets/icons/Time.svg';
 import { markdownToHTML } from '@shared/lib/converters';
-import { DIFFICULTY_COLORS, DIFFICULTY_LABELS, Task } from '@shared/types/task';
+import { DIFFICULTY_COLORS, DIFFICULTY_LABELS, Task, TaskStatusEnum } from '@shared/types/task';
 import Tooltip from '@shared/ui/Tooltip';
 import { default as cn } from 'classnames';
 import { observer } from 'mobx-react-lite';
@@ -14,14 +14,10 @@ import TaskInfoSkeleton from './TaskInfoSkeleton';
 
 interface TaskInfoSectionProps {
   task: Task | null;
-  isSolved: boolean;
-  hasAttempts: boolean;
 }
 
 const TaskInfoSection: React.FC<TaskInfoSectionProps> = observer(({
   task,
-  isSolved,
-  hasAttempts,
 }) => {
   if (!task) {
     return <TaskInfoSkeleton />;
@@ -38,8 +34,8 @@ const TaskInfoSection: React.FC<TaskInfoSectionProps> = observer(({
           </h1>
           <Tooltip content="Статус решения" position="bottom">
             <div className="flex items-center flex-shrink-0">
-              {hasAttempts && (
-                isSolved ? (
+              {task.user_attempt_status != TaskStatusEnum.TODO && (
+                task.user_attempt_status == TaskStatusEnum.SOLVED ? (
                   <>
                     <span className="text-strong mr-2 text-sm sm:text-base">Решена</span>
                     <SolvedIcon width={24} height={24} className="text-success" />

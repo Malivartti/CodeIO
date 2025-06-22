@@ -98,7 +98,6 @@ class AttemptExecutor:
             and not res.time_exceeded
         ):
             return None  # всё прошло успешно
-
         status = (
             ExecutionStatus.MEMORY_LIMIT_EXCEEDED
             if res.memory_exceeded

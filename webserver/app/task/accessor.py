@@ -64,6 +64,75 @@ class TaskAccessor(BaseAccessor):
         else:
             return result
 
+    async def get_task_by_id_with_status(
+        self,
+        *,
+        task_id: int,
+        user_id: UUID | None = None,
+    ) -> TaskWithAttemptStatus | None:
+        try:
+            base_query: Any = select(Task)
+
+            if user_id is not None:
+                status_subq = (
+                    select(
+                        Attempt.task_id,
+                        sql_case(
+                            (
+                                func.sum(
+                                    sql_case(
+                                        (
+                                            col(Attempt.status)
+                                            == AttemptStatusEnum.OK,
+                                            1,
+                                        ),
+                                        else_=0,
+                                    )
+                                )
+                                > 0,
+                                literal(TaskStatusEnum.solved),
+                            ),
+                            else_=literal(TaskStatusEnum.attempted),
+                        ).label("user_attempt_status"),
+                    )
+                    .where(Attempt.user_id == user_id)
+                    .group_by(col(Attempt.task_id))
+                    .subquery()
+                )
+
+                base_query = base_query.outerjoin(
+                    status_subq, col(Task.id) == status_subq.c.task_id
+                ).add_columns(
+                    func.coalesce(
+                        status_subq.c.user_attempt_status,
+                        literal(TaskStatusEnum.todo),
+                    ).label("user_attempt_status")
+                )
+            else:
+                base_query = base_query.add_columns(
+                    literal(TaskStatusEnum.todo).label("user_attempt_status")
+                )
+
+            query = base_query.where(col(Task.id) == task_id)
+
+            result = await self.session.execute(query)
+            row = result.first()
+
+            if row is None:
+                return None
+
+            task = row[0]
+            user_attempt_status = (
+                row[1] if user_id is not None else TaskStatusEnum.todo
+            )
+        except Exception as e:
+            log(e)
+            raise InternalException from e
+        else:
+            return TaskWithAttemptStatus(
+                **task.model_dump(), user_attempt_status=user_attempt_status
+            )
+
     async def get_tasks_with_filters(  # noqa: C901, PLR0912, PLR0915
         self,
         *,

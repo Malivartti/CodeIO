@@ -84,18 +84,6 @@ RUN mkdir -p /app /tmp/sandbox /var/log/worker && \
 
 COPY --from=builder --chown=appuser:appgroup /app /app
 
-# Настройка ограничений ресурсов
-COPY <<EOF /etc/security/limits.d/coderunner.conf
-coderunner soft nproc 50
-coderunner hard nproc 100
-coderunner soft nofile 1024
-coderunner hard nofile 2048
-coderunner soft fsize 10485760
-coderunner hard fsize 20971520
-coderunner soft cpu 30
-coderunner hard cpu 60
-EOF
-
 RUN echo "appuser ALL=(coderunner) NOPASSWD: ALL" >> /etc/sudoers.d/appuser && \
     chmod 440 /etc/sudoers.d/appuser
 

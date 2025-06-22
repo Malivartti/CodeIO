@@ -19,7 +19,7 @@ class AttemptsStore {
   attempts: AttemptForListPublic[] = [];
   totalAttempts = 0;
   currentPage = 1;
-  itemsPerPage = 10;
+  itemsPerPage = 7;
 
   isLoading = false;
   isSubmitting = false;
@@ -237,15 +237,6 @@ class AttemptsStore {
 
   get totalPages(): number {
     return Math.ceil(this.totalAttempts / this.itemsPerPage);
-  }
-
-  get isSolved(): boolean {
-    if (!userStore.user) return false;
-
-    return this.attempts.some(
-      attempt =>
-        attempt.status === AttemptStatus.OK
-    );
   }
 
   get hasRunningAttempt(): boolean {

@@ -23,6 +23,7 @@ from .models import (
     Task,
     TaskCreate,
     TaskFilters,
+    TaskPublic,
     TasksPublic,
     TaskUpdate,
 )
@@ -59,14 +60,17 @@ async def create_task(
 
 @tasks_router.get(
     "/{task_id}",
-    response_model=Task,
+    response_model=TaskPublic,
 )
 async def get_task(
     store: StoreDep,
     task_id: int,
     optional_user: OptionalCurrentUser,
 ) -> Any:
-    task = await store.task.get_task_by_id(task_id=task_id)
+    user_id = optional_user.id if optional_user else None
+    task = await store.task.get_task_by_id_with_status(
+        task_id=task_id, user_id=user_id
+    )
     if not task:
         raise TaskNotFoundException
     if not (

@@ -64,6 +64,7 @@ export interface TaskApi {
   tests: string[][][];
   is_public: boolean;
   tag_ids: number[];
+  user_attempt_status: TaskStatusEnum
 }
 
 export interface Task {
@@ -76,6 +77,7 @@ export interface Task {
   tests: TestCase[]
   is_public: boolean;
   tag_ids: number[];
+  user_attempt_status: TaskStatusEnum
 }
 
 export interface TaskCreateForm {

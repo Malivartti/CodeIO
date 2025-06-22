@@ -6,7 +6,7 @@ Command = list[str]
 
 OUTPUT_LIMIT_MB: Final[int] = 16
 COMPILATION_TIME_LIMIT_SECONDS: Final[int] = 60
-COMPILATION_MEMORY_LIMIT_MB: Final[int] = 512
+COMPILATION_MEMORY_LIMIT_MB: Final[int] = 2048
 COMPILATION_OUTPUT_LIMIT_MB: Final[int] = 64
 
 LANG_CONFIG: Final[dict[ProgrammingLanguage, dict[str, str | Command]]] = {
@@ -34,8 +34,18 @@ LANG_CONFIG: Final[dict[ProgrammingLanguage, dict[str, str | Command]]] = {
     },
     ProgrammingLanguage.GO: {
         "ext": ".go",
-        "compile": ["go", "build", "-o", "{exe}", "{file}"],
-        "run": ["{exe}"],
+        "compile": [
+            "env",
+            "CGO_ENABLED=0",
+            "GOMAXPROCS=2",
+            "GOMEMLIMIT={memory}MiB",
+            "go",
+            "build",
+            "-o",
+            "{exe}",
+            "{file}",
+        ],
+        "run": ["env", "GOMEMLIMIT={memory}MiB", "{exe}"],
     },
     ProgrammingLanguage.RUST: {
         "ext": ".rs",
@@ -59,13 +69,34 @@ LANG_CONFIG: Final[dict[ProgrammingLanguage, dict[str, str | Command]]] = {
     },
     ProgrammingLanguage.JAVA: {
         "ext": ".java",
-        "compile": ["javac", "{file}"],
-        "run": ["java", "-cp", "{workdir}", "-enableassertions", "Main"],
+        "compile": ["javac", "-J-Xmx{memory}m", "{file}"],
+        "run": [
+            "java",
+            "-Xmx{memory}m",
+            "-XX:+UseSerialGC",
+            "-cp",
+            "{workdir}",
+            "-enableassertions",
+            "Main",
+        ],
     },
     ProgrammingLanguage.KOTLIN: {
         "ext": ".kt",
-        "compile": ["kotlinc", "{file}", "-include-runtime", "-d", "{exe}.jar"],
-        "run": ["java", "-jar", "{exe}.jar"],
+        "compile": [
+            "kotlinc",
+            "-J-Xmx{memory}m",
+            "-include-runtime",
+            "-d",
+            "{exe}.jar",
+            "{file}",
+        ],
+        "run": [
+            "java",
+            "-Xmx{memory}m",
+            "-XX:+UseSerialGC",
+            "-jar",
+            "{exe}.jar",
+        ],
     },
     ProgrammingLanguage.C_SHARP: {
         "ext": ".cs",

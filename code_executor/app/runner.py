@@ -136,18 +136,18 @@ class CommandRunner:
     @staticmethod
     def _set_limits(sec: int, mem_mb: int, is_compilation: bool) -> None:
         """Выставить CPU-, память- и output-лимиты для текущего процесса."""
-        mem_bytes = mem_mb * 1024 * 1024
+        # mem_bytes = mem_mb * 1024 * 1024
         resource.setrlimit(resource.RLIMIT_CPU, (sec, sec))
 
-        if sys.platform == "darwin":  # RLIMIT_AS менее стабилен на macOS
-            target = resource.RLIMIT_DATA
-        else:
-            target = resource.RLIMIT_AS
+        # if sys.platform == "darwin":  # RLIMIT_AS менее стабилен на macOS
+        #     target = resource.RLIMIT_DATA
+        # else:
+        #     target = resource.RLIMIT_AS
 
-        try:
-            resource.setrlimit(target, (mem_bytes, mem_bytes))
-        except (ValueError, OSError):
-            pass
+        # try:
+        #     resource.setrlimit(target, (mem_bytes, mem_bytes))
+        # except (ValueError, OSError):
+        #     pass
 
         fsize = (
             (COMPILATION_OUTPUT_LIMIT_MB if is_compilation else OUTPUT_LIMIT_MB)
