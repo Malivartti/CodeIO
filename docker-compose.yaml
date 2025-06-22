@@ -31,6 +31,8 @@ services:
     environment:
       - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL?Variable not set}
       - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD?Variable not set}
+    volumes:
+    - pgadmin_data:/var/lib/pgadmin
     labels:
       - traefik.enable=true
       - traefik.docker.network=traefik-public
@@ -168,6 +170,7 @@ services:
 
 volumes:
   postgres_data:
+  pgadmin_data:
   rabbitmq_data:
 
 networks:
